@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ERP 시스템 (풀스택 분리)</title>
+  <link rel="stylesheet" href="./css/style.css"/>
+</head>
+<body>
+  <div id="toast" class="toast"></div>
+
+  <!-- 로그인 -->
+  <div id="loginPage" class="login-container">
+    <div class="login-box">
+      <h1>ERP 시스템</h1>
+      <form id="loginForm">
+        <div class="input-group">
+          <label for="username">사용자명</label>
+          <input id="username" type="text" placeholder="admin / manager / staff" required />
+        </div>
+        <div class="input-group">
+          <label for="password">비밀번호</label>
+          <input id="password" type="password" placeholder="1234" required />
+        </div>
+        <button class="btn" type="submit">로그인</button>
+        <p class="hint">
+          테스트 계정: admin/1234, manager/1234, staff/1234
+        </p>
+      </form>
+    </div>
+  </div>
+
+  <!-- 메인 -->
+  <div id="mainPage" class="main-container">
+    <div class="sidebar">
+      <h2>ERP 시스템</h2>
+      <div class="user-box">
+        <div>사용자: <span id="currentUserName">-</span></div>
+        <div>권한: <span id="currentUserRole">-</span></div>
+      </div>
+
+      <nav>
+        <ul id="menuList">
+          <li class="menu-item active" data-page="dashboard">대시보드</li>
+          <li class="menu-item" data-page="products">상품 관리</li>
+          <li class="menu-item" data-page="inventory">재고 관리</li>
+          <li class="menu-item" data-page="history">재고 이력</li>
+        </ul>
+      </nav>
+
+      <button id="logoutBtn" class="logout-btn">로그아웃</button>
+    </div>
+
+    <div class="content">
+      <!-- 대시보드 -->
+      <section id="dashboardPage" class="page active">
+        <div class="page-header">
+          <h1>대시보드</h1>
+          <p>전체 현황을 확인합니다</p>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <h3>전체 상품</h3>
+            <div class="stat-value" id="dashTotalProducts">0</div>
+            <div class="stat-change positive">등록 수</div>
+          </div>
+          <div class="stat-card">
+            <h3>총 재고 수량</h3>
+            <div class="stat-value" id="dashTotalQty">0</div>
+            <div class="stat-change">합계</div>
+          </div>
+          <div class="stat-card">
+            <h3>재고 부족(안전재고 미달)</h3>
+            <div class="stat-value" id="dashLowStockCount">0</div>
+            <div class="stat-change negative">주의 필요</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 상품관리 -->
+      <section id="productsPage" class="page">
+        <div class="page-header">
+          <h1>상품 관리</h1>
+          <p>상품 CRUD를 관리합니다</p>
+        </div>
+
+        <div class="table-container">
+          <div class="table-header">
+            <div class="table-header-left">
+              <input id="productSearch" class="search-box" type="text" placeholder="상품명/코드 검색..."/>
+            </div>
+
+            <div class="table-header-left">
+              <button class="btn-add" id="exportExcelBtn">엑셀 내보내기</button>
+              <button class="btn-add" id="importExcelBtn">엑셀 가져오기</button>
+              <input id="excelFileInput" type="file" accept=".xlsx" style="display:none;" />
+              <button class="btn-add" id="openAddProductBtn">+ 상품 추가</button>
+            </div>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>이미지</th>
+                <th>상품코드</th>
+                <th>상품명</th>
+                <th>카테고리</th>
+                <th>단위</th>
+                <th>가격</th>
+                <th>재고</th>
+                <th>상태</th>
+                <th>관리</th>
+              </tr>
+            </thead>
+            <tbody id="productTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 재고관리 -->
+      <section id="inventoryPage" class="page">
+        <div class="page-header">
+          <h1>재고 관리</h1>
+          <p>입고/출고/조정을 실행합니다</p>
+        </div>
+
+        <div class="table-container">
+          <div class="table-header">
+            <div class="table-header-left">
+              <input id="inventorySearch" class="search-box" type="text" placeholder="상품명/코드 검색..."/>
+            </div>
+            <div class="table-header-left">
+              <button class="btn-add" id="openAdjustBtn">+ 재고 조정</button>
+            </div>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>상품코드</th>
+                <th>상품명</th>
+                <th>현재재고</th>
+                <th>안전재고</th>
+                <th>상태</th>
+                <th>관리</th>
+              </tr>
+            </thead>
+            <tbody id="inventoryTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 이력 -->
+      <section id="historyPage" class="page">
+        <div class="page-header">
+          <h1>재고 이력</h1>
+          <p>모든 변동 내역을 확인합니다</p>
+        </div>
+
+        <div class="table-container">
+          <div class="table-header">
+            <input id="historySearch" class="search-box" type="text" placeholder="상품코드 검색..."/>
+            <select id="historyTypeFilter" class="select-box">
+              <option value="">전체 유형</option>
+              <option value="IN">입고(IN)</option>
+              <option value="OUT">출고(OUT)</option>
+              <option value="ADJUST">조정(ADJUST)</option>
+              <option value="CREATE">생성(CREATE)</option>
+              <option value="UPDATE">수정(UPDATE)</option>
+              <option value="DELETE">삭제(DELETE)</option>
+            </select>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>시간</th>
+                <th>상품코드</th>
+                <th>유형</th>
+                <th>변동량</th>
+                <th>담당자</th>
+                <th>메모</th>
+              </tr>
+            </thead>
+            <tbody id="historyTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- 상품 모달 -->
+  <div id="productModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="productModalTitle">상품 추가</h2>
+        <span class="close-btn" id="closeProductModal">&times;</span>
+      </div>
+
+      <form id="productForm">
+        <input type="hidden" id="productMode" value="create"/>
+
+        <div class="input-group">
+          <label for="productCode">상품코드</label>
+          <input id="productCode" type="text" required />
+        </div>
+        <div class="input-group">
+          <label for="productName">상품명</label>
+          <input id="productName" type="text" required />
+        </div>
+        <div class="input-group">
+          <label for="productCategory">카테고리</label>
+          <input id="productCategory" type="text" placeholder="예: 전자기기" />
+        </div>
+        <div class="input-group">
+          <label for="productUnit">단위</label>
+          <select id="productUnit">
+            <option value="ea">ea</option>
+            <option value="m">m</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label for="productPrice">가격</label>
+          <input id="productPrice" type="number" min="0" value="0" required/>
+        </div>
+        <div class="input-group">
+          <label for="productSafetyStock">안전재고</label>
+          <input id="productSafetyStock" type="number" min="0" value="10" required/>
+        </div>
+        <div class="input-group">
+          <label for="productQty">초기 재고(qty)</label>
+          <input id="productQty" type="number" min="0" value="0" required/>
+        </div>
+
+        <div class="input-group">
+          <label for="productImageFile">상품 이미지(선택)</label>
+          <input id="productImageFile" type="file" accept="image/*" />
+          <div class="hint small">저장 시 base64로 DB(database.json)에 저장됩니다.</div>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn-submit" type="submit">저장</button>
+          <button class="btn-cancel" type="button" id="cancelProductModal">취소</button>
+        </div>
+
+        <p class="hint small">
+          권한: admin/manager만 상품 추가/수정 가능, 삭제는 admin만 가능
+        </p>
+      </form>
+    </div>
+  </div>
+
+  <!-- 재고 조정 모달 -->
+  <div id="adjustModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>재고 조정</h2>
+        <span class="close-btn" id="closeAdjustModal">&times;</span>
+      </div>
+
+      <form id="adjustForm">
+        <div class="input-group">
+          <label for="adjustProductCode">상품코드</label>
+          <select id="adjustProductCode" required></select>
+        </div>
+        <div class="input-group">
+          <label for="adjustType">유형</label>
+          <select id="adjustType" required>
+            <option value="IN">입고(IN)</option>
+            <option value="OUT">출고(OUT)</option>
+            <option value="ADJUST">조정(ADJUST)</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label for="adjustDelta">수량(delta)</label>
+          <input id="adjustDelta" type="number" required />
+        </div>
+        <div class="input-group">
+          <label for="adjustMemo">메모</label>
+          <input id="adjustMemo" type="text" placeholder="선택사항" />
+        </div>
+
+        <div class="form-actions">
+          <button class="btn-submit" type="submit">저장</button>
+          <button class="btn-cancel" type="button" id="cancelAdjustModal">취소</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 이미지 확대 모달 -->
+  <div id="imageModal" class="modal">
+    <div class="modal-content image-modal">
+      <div class="modal-header">
+        <h2 id="imageModalTitle">상품 이미지</h2>
+        <span class="close-btn" id="closeImageModal">&times;</span>
+      </div>
+      <div class="image-modal-body">
+        <img id="imageModalImg" alt="product image"/>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="./js/utils.js"></script>
+  <script type="module" src="./js/api.js"></script>
+  <script type="module" src="./js/auth.js"></script>
+  <script type="module" src="./js/dashboard.js"></script>
+  <script type="module" src="./js/products.js"></script>
+  <script type="module" src="./js/inventory.js"></script>
+  <script type="module" src="./js/history.js"></script>
+</body>
+</html>

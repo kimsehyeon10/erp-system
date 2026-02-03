@@ -1,0 +1,17 @@
+{
+  "name": "erp-system-backend",
+  "version": "1.0.0",
+  "description": "ERP System Backend (Express + JSON DB)",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": ["erp", "inventory", "express", "jsondb"],
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "xlsx": "^0.18.5"
+  }
+}
