@@ -1,0 +1,104 @@
+{
+  "users": [
+    {
+      "username": "admin",
+      "password": "1234",
+      "role": "admin"
+    },
+    {
+      "username": "manager",
+      "password": "1234",
+      "role": "manager"
+    },
+    {
+      "username": "staff",
+      "password": "1234",
+      "role": "staff"
+    }
+  ],
+  "products": [
+    {
+      "id": "P001",
+      "code": "P001",
+      "name": "노트북 A",
+      "category": "전자기기",
+      "qty": 48,
+      "price": 1200000,
+      "safetyStock": 30,
+      "unit": "EA",
+      "location": "A열 2층",
+      "spec": "15.6인치 / i7 / 16GB / 512GB",
+      "description": "업무용 노트북",
+      "condition": "new",
+      "type": "standard",
+      "barcode": "8800000000001",
+      "bomItems": [],
+      "updatedAt": "2026-02-06T08:40:41.189Z"
+    },
+    {
+      "id": "P002",
+      "code": "P002",
+      "name": "마우스 B",
+      "category": "주변기기",
+      "qty": 8,
+      "price": 35000,
+      "safetyStock": 20,
+      "unit": "EA",
+      "location": "B열 1층",
+      "spec": "무선 / 블루투스",
+      "description": "사무용 무선 마우스",
+      "condition": "new",
+      "type": "standard",
+      "barcode": "8800000000002",
+      "bomItems": [],
+      "updatedAt": "2026-02-01T00:00:00.000Z"
+    },
+    {
+      "id": "P003",
+      "code": "P003",
+      "name": "키보드 C",
+      "category": "주변기기",
+      "qty": 0,
+      "price": 89000,
+      "safetyStock": 15,
+      "unit": "EA",
+      "location": "B열 2층",
+      "spec": "기계식 / 적축",
+      "description": "타건감 좋은 기계식 키보드",
+      "condition": "used",
+      "type": "standard",
+      "barcode": "8800000000003",
+      "bomItems": [],
+      "updatedAt": "2026-02-01T00:00:00.000Z"
+    }
+  ],
+  "history": [
+    {
+      "id": "H_1770367241189_c640be153cc298",
+      "productCode": "P001",
+      "type": "IN",
+      "delta": 3,
+      "memo": "",
+      "user": "admin",
+      "at": "2026-02-06T08:40:41.189Z"
+    },
+    {
+      "id": "H001",
+      "productCode": "P001",
+      "type": "IN",
+      "delta": 20,
+      "memo": "정기 입고",
+      "user": "admin",
+      "at": "2026-02-01T05:23:00.000Z"
+    },
+    {
+      "id": "H002",
+      "productCode": "P002",
+      "type": "OUT",
+      "delta": -12,
+      "memo": "온라인 주문",
+      "user": "manager",
+      "at": "2026-02-01T02:15:00.000Z"
+    }
+  ]
+}
