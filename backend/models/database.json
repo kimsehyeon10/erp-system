@@ -27,7 +27,13 @@
       "price": 1200000,
       "safetyStock": 30,
       "image": "",
-      "updatedAt": "2026-02-01T00:00:00.000Z"
+      "updatedAt": "2026-02-01T00:00:00.000Z",
+      "barcode": "P001",
+      "location": "A열 2층",
+      "spec": "15인치 / i7 / 16GB",
+      "note": "업무용 기본 모델",
+      "condition": "new",
+      "productType": "finished"
     },
     {
       "id": "P002",
@@ -39,7 +45,13 @@
       "price": 35000,
       "safetyStock": 20,
       "image": "",
-      "updatedAt": "2026-02-01T00:00:00.000Z"
+      "updatedAt": "2026-02-01T00:00:00.000Z",
+      "barcode": "P002",
+      "location": "B열 1층",
+      "spec": "무선 / 블루투스",
+      "note": "프로모션 상품",
+      "condition": "used",
+      "productType": "finished"
     },
     {
       "id": "P003",
@@ -51,7 +63,13 @@
       "price": 89000,
       "safetyStock": 15,
       "image": "",
-      "updatedAt": "2026-02-01T00:00:00.000Z"
+      "updatedAt": "2026-02-01T00:00:00.000Z",
+      "barcode": "P003",
+      "location": "C열 3층",
+      "spec": "기계식 / 청축",
+      "note": "BOM 구성품으로도 사용",
+      "condition": "new",
+      "productType": "bom"
     }
   ],
   "history": [

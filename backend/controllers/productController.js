@@ -15,10 +15,24 @@ function roleAllowed(role, allowedRoles) {
   return allowedRoles.includes(role);
 }
 
+function canViewPrice(role) {
+  return roleAllowed(role, ["admin", "manager"]);
+}
+
 function normalizeUnit(unit) {
   const u = (unit || "ea").toString().trim().toLowerCase();
   if (u === "m") return "m";
   return "ea";
+}
+
+function normalizeCondition(condition) {
+  const c = String(condition || "new").trim().toLowerCase();
+  return c === "used" ? "used" : "new";
+}
+
+function normalizeProductType(productType) {
+  const t = String(productType || "finished").trim().toLowerCase();
+  return t === "bom" ? "bom" : "finished";
 }
 
 function safeNumber(v, fallback = 0) {
@@ -26,12 +40,18 @@ function safeNumber(v, fallback = 0) {
   return Number.isFinite(n) ? n : fallback;
 }
 
+function mapProductForRole(product, role) {
+  if (canViewPrice(role)) return product;
+  return { ...product, price: null };
+}
+
 function listProducts(req, res) {
   const auth = requireAuth(req, res);
   if (!auth) return;
 
   const db = readDB();
-  return res.json({ ok: true, products: db.products });
+  const products = db.products.map((p) => mapProductForRole(p, auth.role));
+  return res.json({ ok: true, products });
 }
 
 function getProduct(req, res) {
@@ -46,7 +66,7 @@ function getProduct(req, res) {
     return res.status(404).json({ ok: false, message: "Product not found" });
   }
 
-  return res.json({ ok: true, product });
+  return res.json({ ok: true, product: mapProductForRole(product, auth.role) });
 }
 
 function createProduct(req, res) {
@@ -57,7 +77,22 @@ function createProduct(req, res) {
     return res.status(403).json({ ok: false, message: "No permission" });
   }
 
-  const { code, name, category, unit, qty, price, safetyStock, image } = req.body || {};
+  const {
+    code,
+    name,
+    category,
+    unit,
+    qty,
+    price,
+    safetyStock,
+    image,
+    location,
+    spec,
+    note,
+    condition,
+    productType,
+    barcode
+  } = req.body || {};
   if (!code || !name) {
     return res.status(400).json({ ok: false, message: "code/name required" });
   }
@@ -71,12 +106,18 @@ function createProduct(req, res) {
   const product = {
     id: genId("P"),
     code: String(code).trim(),
+    barcode: String(barcode || code).trim(),
     name: String(name).trim(),
     category: category ? String(category).trim() : "미분류",
     unit: normalizeUnit(unit),
     qty: safeNumber(qty, 0),
     price: safeNumber(price, 0),
     safetyStock: safetyStock === undefined ? 10 : safeNumber(safetyStock, 10),
+    location: String(location || "").trim(),
+    spec: String(spec || "").trim(),
+    note: String(note || "").trim(),
+    condition: normalizeCondition(condition),
+    productType: normalizeProductType(productType),
     image: image ? String(image) : "",
     updatedAt: nowISO(),
   };
@@ -94,7 +135,7 @@ function createProduct(req, res) {
   });
 
   writeDB(db);
-  return res.status(201).json({ ok: true, product });
+  return res.status(201).json({ ok: true, product: mapProductForRole(product, auth.role) });
 }
 
 function updateProduct(req, res) {
@@ -118,12 +159,18 @@ function updateProduct(req, res) {
 
   const next = {
     ...prev,
+    barcode: payload.barcode !== undefined ? String(payload.barcode || "").trim() : (prev.barcode || prev.code),
     name: payload.name !== undefined ? String(payload.name).trim() : prev.name,
     category: payload.category !== undefined ? String(payload.category).trim() : prev.category,
     unit: payload.unit !== undefined ? normalizeUnit(payload.unit) : prev.unit,
     price: payload.price !== undefined ? safeNumber(payload.price, prev.price) : prev.price,
     safetyStock:
       payload.safetyStock !== undefined ? safeNumber(payload.safetyStock, prev.safetyStock) : prev.safetyStock,
+    location: payload.location !== undefined ? String(payload.location || "").trim() : (prev.location || ""),
+    spec: payload.spec !== undefined ? String(payload.spec || "").trim() : (prev.spec || ""),
+    note: payload.note !== undefined ? String(payload.note || "").trim() : (prev.note || ""),
+    condition: payload.condition !== undefined ? normalizeCondition(payload.condition) : normalizeCondition(prev.condition),
+    productType: payload.productType !== undefined ? normalizeProductType(payload.productType) : normalizeProductType(prev.productType),
     image: payload.image !== undefined ? String(payload.image || "") : prev.image,
     updatedAt: nowISO(),
   };
@@ -141,7 +188,7 @@ function updateProduct(req, res) {
   });
 
   writeDB(db);
-  return res.json({ ok: true, product: next });
+  return res.json({ ok: true, product: mapProductForRole(next, auth.role) });
 }
 
 function deleteProduct(req, res) {
@@ -173,7 +220,7 @@ function deleteProduct(req, res) {
   });
 
   writeDB(db);
-  return res.json({ ok: true, deleted });
+  return res.json({ ok: true, deleted: mapProductForRole(deleted, auth.role) });
 }
 
 function adjustInventory(req, res) {
@@ -226,13 +273,9 @@ function adjustInventory(req, res) {
   });
 
   writeDB(db);
-  return res.json({ ok: true, product: db.products[idx] });
+  return res.json({ ok: true, product: mapProductForRole(db.products[idx], auth.role) });
 }
 
-/**
- * 엑셀 내보내기: GET /products/export.xlsx
- * - Content-Disposition: attachment 로 다운로드
- */
 function exportProductsExcel(req, res) {
   const auth = requireAuth(req, res);
   if (!auth) return;
@@ -240,17 +283,23 @@ function exportProductsExcel(req, res) {
   const db = readDB();
   const rows = db.products.map((p) => ({
     code: p.code,
+    barcode: p.barcode || p.code,
     name: p.name,
     category: p.category || "",
     unit: p.unit || "ea",
     qty: p.qty || 0,
     price: p.price || 0,
     safetyStock: p.safetyStock ?? 10,
-    image: p.image || "" // base64(또는 dataURL) 그대로
+    location: p.location || "",
+    spec: p.spec || "",
+    note: p.note || "",
+    condition: p.condition || "new",
+    productType: p.productType || "finished",
+    image: p.image || ""
   }));
 
   const ws = XLSX.utils.json_to_sheet(rows, {
-    header: ["code", "name", "category", "unit", "qty", "price", "safetyStock", "image"]
+    header: ["code", "barcode", "name", "category", "unit", "qty", "price", "safetyStock", "location", "spec", "note", "condition", "productType", "image"]
   });
 
   const wb = XLSX.utils.book_new();
@@ -266,12 +315,6 @@ function exportProductsExcel(req, res) {
   return res.send(buf);
 }
 
-/**
- * 엑셀 가져오기: POST /products/import?mode=merge|replace
- * body: { base64: "...." }  // 파일 전체를 base64로 전송
- * - merge: code 기준 upsert
- * - replace: products를 엑셀 기준으로 통째로 교체
- */
 function importProductsExcel(req, res) {
   const auth = requireAuth(req, res);
   if (!auth) return;
@@ -309,17 +352,21 @@ function importProductsExcel(req, res) {
   const ws = workbook.Sheets[firstSheetName];
   const rows = XLSX.utils.sheet_to_json(ws, { defval: "" });
 
-  // 기대 컬럼: code,name,category,unit,qty,price,safetyStock,image
-  // 최소: code,name
   const cleaned = rows
     .map((r) => ({
       code: String(r.code || "").trim(),
+      barcode: String(r.barcode || r.code || "").trim(),
       name: String(r.name || "").trim(),
       category: String(r.category || "").trim() || "미분류",
       unit: normalizeUnit(r.unit),
       qty: safeNumber(r.qty, 0),
       price: safeNumber(r.price, 0),
       safetyStock: r.safetyStock === "" ? 10 : safeNumber(r.safetyStock, 10),
+      location: String(r.location || "").trim(),
+      spec: String(r.spec || "").trim(),
+      note: String(r.note || "").trim(),
+      condition: normalizeCondition(r.condition),
+      productType: normalizeProductType(r.productType),
       image: r.image ? String(r.image) : ""
     }))
     .filter((r) => r.code && r.name);
@@ -334,21 +381,25 @@ function importProductsExcel(req, res) {
   let adjusted = 0;
 
   if (mode === "replace") {
-    // replace: products 전부 교체
     const nextProducts = cleaned.map((r) => ({
       id: genId("P"),
       code: r.code,
+      barcode: r.barcode,
       name: r.name,
       category: r.category,
       unit: r.unit,
       qty: r.qty,
       price: r.price,
       safetyStock: r.safetyStock,
+      location: r.location,
+      spec: r.spec,
+      note: r.note,
+      condition: r.condition,
+      productType: r.productType,
       image: r.image,
       updatedAt: nowISO()
     }));
 
-    // 기록(간단): REPLACE 메모로 일괄 로그
     db.history.unshift({
       id: genId("H"),
       productCode: "*",
@@ -364,19 +415,24 @@ function importProductsExcel(req, res) {
     return res.json({ ok: true, mode, created: nextProducts.length, updated: 0, adjusted: 0 });
   }
 
-  // merge: code 기준 upsert + qty 차이는 ADJUST 기록
   cleaned.forEach((r) => {
     const idx = db.products.findIndex((p) => p.code === r.code);
     if (idx === -1) {
       const product = {
         id: genId("P"),
         code: r.code,
+        barcode: r.barcode,
         name: r.name,
         category: r.category,
         unit: r.unit,
         qty: r.qty,
         price: r.price,
         safetyStock: r.safetyStock,
+        location: r.location,
+        spec: r.spec,
+        note: r.note,
+        condition: r.condition,
+        productType: r.productType,
         image: r.image,
         updatedAt: nowISO()
       };
@@ -398,16 +454,21 @@ function importProductsExcel(req, res) {
     const prev = db.products[idx];
     const next = {
       ...prev,
+      barcode: r.barcode,
       name: r.name,
       category: r.category,
       unit: r.unit,
       price: r.price,
       safetyStock: r.safetyStock,
+      location: r.location,
+      spec: r.spec,
+      note: r.note,
+      condition: r.condition,
+      productType: r.productType,
       image: r.image,
       updatedAt: nowISO()
     };
 
-    // qty 반영: 차이가 있으면 ADJUST로 기록하고 qty 업데이트
     const prevQty = safeNumber(prev.qty, 0);
     const nextQty = safeNumber(r.qty, prevQty);
     const delta = nextQty - prevQty;

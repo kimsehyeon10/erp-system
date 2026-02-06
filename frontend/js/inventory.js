@@ -10,10 +10,8 @@ function closeAdjustModal() {
   document.getElementById("adjustModal").classList.remove("active");
 }
 
-function openAdjustModal() {
-  const modal = document.getElementById("adjustModal");
-  modal.classList.add("active");
-
+function openAdjustModal(defaultCode = "") {
+  document.getElementById("adjustModal").classList.add("active");
   const select = document.getElementById("adjustProductCode");
   select.innerHTML = "";
   cachedProducts.forEach((p) => {
@@ -22,71 +20,47 @@ function openAdjustModal() {
     opt.textContent = `${p.code} - ${p.name}`;
     select.appendChild(opt);
   });
-
   document.getElementById("adjustForm").reset();
+  if (defaultCode) select.value = defaultCode;
 }
 
-async function renderTable(products) {
+function renderTable(products) {
   const tbody = document.getElementById("inventoryTableBody");
   tbody.innerHTML = "";
 
   products.forEach((p) => {
     const status = badgeStatus(Number(p.qty || 0), Number(p.safetyStock || 0));
-
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td>${p.code}</td>
+      <td>${p.code}<div class="hint small">${p.barcode || ""}</div></td>
       <td>${p.name}</td>
-      <td>${Number(p.qty || 0)}</td>
-      <td>${Number(p.safetyStock || 0)}</td>
+      <td>${p.location || "-"}</td>
+      <td>${Number(p.qty || 0)} ${p.unit || "ea"}</td>
+      <td>${Number(p.safetyStock || 0)} ${p.unit || "ea"}</td>
       <td><span class="badge ${status.cls}">${status.text}</span></td>
-      <td class="action-btns">
-        <button class="btn-edit" data-code="${p.code}">조정</button>
-      </td>
+      <td class="action-btns"><button class="btn-edit" data-code="${p.code}">조정</button></td>
     `;
-
     tbody.appendChild(tr);
   });
 
-  tbody.querySelectorAll(".btn-edit").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      openAdjustModal();
-      document.getElementById("adjustProductCode").value = btn.getAttribute("data-code");
-    });
-  });
+  tbody.querySelectorAll(".btn-edit").forEach((btn) => btn.addEventListener("click", () => openAdjustModal(btn.dataset.code)));
 }
 
 function applySearch(term) {
   const t = (term || "").toLowerCase();
-  const filtered = cachedProducts.filter((p) => {
-    const s = `${p.code} ${p.name}`.toLowerCase();
-    return s.includes(t);
-  });
-  renderTable(filtered);
+  renderTable(cachedProducts.filter((p) => `${p.code} ${p.barcode || ""} ${p.name}`.toLowerCase().includes(t)));
 }
 
 async function handleAdjustSubmit(e) {
   e.preventDefault();
-
   const productCode = document.getElementById("adjustProductCode").value;
   const type = document.getElementById("adjustType").value;
   const delta = Number(document.getElementById("adjustDelta").value);
   const memo = document.getElementById("adjustMemo").value.trim();
 
-  if (!productCode) {
-    showToast("상품을 선택하세요.", true);
-    return;
-  }
-
-  if (!Number.isFinite(delta) || delta === 0) {
-    showToast("수량(delta)은 0이 아니어야 합니다.", true);
-    return;
-  }
-
   try {
     await apiPost("/products/adjust", { productCode, type, delta, memo });
     showToast("재고 조정 완료");
-
     closeAdjustModal();
     await loadInventoryPage(true);
     await loadProductsPage(true);
@@ -97,6 +71,15 @@ async function handleAdjustSubmit(e) {
   }
 }
 
+function handleBarcodeScan() {
+  const term = document.getElementById("barcodeScanInput").value.trim().toLowerCase();
+  if (!term) return;
+  const found = cachedProducts.find((p) => (p.barcode || p.code || "").toLowerCase() === term || p.code.toLowerCase() === term);
+  if (!found) return showToast("바코드에 해당하는 상품이 없습니다.", true);
+  showToast(`${found.name} 선택됨. 입/출고/조정을 진행하세요.`);
+  openAdjustModal(found.code);
+}
+
 export async function loadInventoryPage(force = false) {
   try {
     if (force || cachedProducts.length === 0) {
@@ -104,12 +87,11 @@ export async function loadInventoryPage(force = false) {
       cachedProducts = data.products || [];
     }
 
-    await renderTable(cachedProducts);
-
-    const search = document.getElementById("inventorySearch");
-    search.oninput = () => applySearch(search.value);
-
-    document.getElementById("openAdjustBtn").onclick = openAdjustModal;
+    renderTable(cachedProducts);
+    document.getElementById("inventorySearch").oninput = (e) => applySearch(e.target.value);
+    document.getElementById("openAdjustBtn").onclick = () => openAdjustModal();
+    document.getElementById("scanBarcodeBtn").onclick = handleBarcodeScan;
+    document.getElementById("barcodeScanInput").onkeydown = (e) => e.key === "Enter" && handleBarcodeScan();
 
     document.getElementById("closeAdjustModal").onclick = closeAdjustModal;
     document.getElementById("cancelAdjustModal").onclick = closeAdjustModal;
