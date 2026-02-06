@@ -107,6 +107,9 @@
                 <th>상품명</th>
                 <th>카테고리</th>
                 <th>단위</th>
+                <th>위치</th>
+                <th>상태구분</th>
+                <th>품목구분</th>
                 <th>가격</th>
                 <th>재고</th>
                 <th>상태</th>
@@ -131,6 +134,8 @@
               <input id="inventorySearch" class="search-box" type="text" placeholder="상품명/코드 검색..."/>
             </div>
             <div class="table-header-left">
+              <input id="barcodeScanInput" class="search-box" type="text" placeholder="바코드/상품코드 스캔"/>
+              <button class="btn-add" id="scanBarcodeBtn">바코드 검색</button>
               <button class="btn-add" id="openAdjustBtn">+ 재고 조정</button>
             </div>
           </div>
@@ -140,6 +145,7 @@
               <tr>
                 <th>상품코드</th>
                 <th>상품명</th>
+                <th>위치</th>
                 <th>현재재고</th>
                 <th>안전재고</th>
                 <th>상태</th>
@@ -169,6 +175,7 @@
               <option value="CREATE">생성(CREATE)</option>
               <option value="UPDATE">수정(UPDATE)</option>
               <option value="DELETE">삭제(DELETE)</option>
+              <option value="CANCEL">취소(CANCEL)</option>
             </select>
           </div>
 
@@ -181,6 +188,7 @@
                 <th>변동량</th>
                 <th>담당자</th>
                 <th>메모</th>
+                <th>관리</th>
               </tr>
             </thead>
             <tbody id="historyTableBody"></tbody>
@@ -206,6 +214,10 @@
           <input id="productCode" type="text" required />
         </div>
         <div class="input-group">
+          <label for="productBarcode">바코드</label>
+          <input id="productBarcode" type="text" placeholder="미입력 시 상품코드와 동일" />
+        </div>
+        <div class="input-group">
           <label for="productName">상품명</label>
           <input id="productName" type="text" required />
         </div>
@@ -219,6 +231,32 @@
             <option value="ea">ea</option>
             <option value="m">m</option>
           </select>
+        </div>
+        <div class="input-group">
+          <label for="productLocation">위치</label>
+          <input id="productLocation" type="text" placeholder="예: A열 2층" />
+        </div>
+        <div class="input-group">
+          <label for="productCondition">신품/중고</label>
+          <select id="productCondition">
+            <option value="new">신품</option>
+            <option value="used">중고</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label for="productType">기성품/BOM</label>
+          <select id="productType">
+            <option value="finished">기성품</option>
+            <option value="bom">BOM</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label for="productSpec">규격</label>
+          <input id="productSpec" type="text" placeholder="규격 입력" />
+        </div>
+        <div class="input-group">
+          <label for="productNote">비고/제품설명</label>
+          <input id="productNote" type="text" placeholder="제품설명 및 비고" />
         </div>
         <div class="input-group">
           <label for="productPrice">가격</label>
