@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>ERP 시스템 (풀스택 분리)</title>
   <link rel="stylesheet" href="./css/style.css"/>
+  <link rel="stylesheet" href="./css/charts.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
   <div id="toast" class="toast"></div>
@@ -45,6 +47,7 @@
           <li class="menu-item" data-page="products">상품 관리</li>
           <li class="menu-item" data-page="inventory">재고 관리</li>
           <li class="menu-item" data-page="history">재고 이력</li>
+          <li class="menu-item" data-page="barcode">바코드</li>
         </ul>
       </nav>
 
@@ -60,20 +63,69 @@
         </div>
 
         <div class="stats-grid">
-          <div class="stat-card">
-            <h3>전체 상품</h3>
+          <div class="stat-card clickable" id="statCardAllProducts">
+            <h2>✔️전체 상품 수</h2>
             <div class="stat-value" id="dashTotalProducts">0</div>
             <div class="stat-change positive">등록 수</div>
           </div>
-          <div class="stat-card">
-            <h3>총 재고 수량</h3>
+          <div class="stat-card clickable" id="statCardTotalQty">
+            <h2>⚙총 재고 수량</h2>
             <div class="stat-value" id="dashTotalQty">0</div>
             <div class="stat-change">합계</div>
           </div>
-          <div class="stat-card">
-            <h3>재고 부족(안전재고 미달)</h3>
+          <div class="stat-card clickable" id="statCardLowStock">
+            <h2>⚠️재고 부족(안전재고 미달)</h2>
             <div class="stat-value" id="dashLowStockCount">0</div>
             <div class="stat-change negative">주의 필요</div>
+          </div>
+        <!------------------------------>
+        </div>
+        <!-- 원형 차트 2개 -->
+        <div class="charts-grid">
+          <!-- 상품별 재고 분포 -->
+          <div class="chart-card">
+            <h3>상품별 재고 분포</h3>
+            <div class="chart-container">
+              <canvas id="productChart"></canvas>
+            </div>
+            <div class="chart-footer">
+              <p>총 재고</p>
+              <div class="total-value" id="chartTotalStock">0개</div>
+            </div>
+          </div>
+
+          <!-- 카테고리별 재고 분포 -->
+          <div class="chart-card">
+            <h3>카테고리별 재고 분포</h3>
+            <div class="chart-container">
+              <canvas id="categoryChart"></canvas>
+            </div>
+            <div class="chart-footer">
+              <p>카테고리 수</p>
+              <div class="total-value" id="chartCategoryCount">0개</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 재고 현황 표 -->
+        <div class="inventory-table-section">
+          <h2>재고 현황</h2>
+          <div class="table-container">
+            <table class="inventory-status-table">
+              <thead>
+                <tr>
+                  <th>상품코드</th>
+                  <th>상품명</th>
+                  <th>카테고리</th>
+                  <th>재고수량</th>
+                  <th>최소/적정 수량</th>
+                  <th>상태</th>
+                </tr>
+              </thead>
+              <tbody id="dashInventoryTableBody">
+                <!-- 데이터는 JavaScript로 동적 생성 -->
+              </tbody>
+            </table>
           </div>
         </div>
       </section>
@@ -82,13 +134,13 @@
       <section id="productsPage" class="page">
         <div class="page-header">
           <h1>상품 관리</h1>
-          <p>상품 CRUD를 관리합니다</p>
+          <p>상품을 관리합니다</p>
         </div>
 
         <div class="table-container">
           <div class="table-header">
             <div class="table-header-left">
-              <input id="productSearch" class="search-box" type="text" placeholder="상품명/코드 검색..."/>
+              <input id="productSearch" class="search-box" type="text" placeholder="상품명/코드/위치/바코드 검색..."/>
             </div>
 
             <div class="table-header-left">
@@ -108,11 +160,12 @@
                 <th>카테고리</th>
                 <th>단위</th>
                 <th>위치</th>
-                <th>상태구분</th>
-                <th>품목구분</th>
+                <th>바코드</th>
+                <th>신품/중고</th>
+                <th>유형</th>
                 <th>가격</th>
                 <th>재고</th>
-                <th>상태</th>
+                <th>재고상태</th>
                 <th>관리</th>
               </tr>
             </thead>
@@ -131,11 +184,9 @@
         <div class="table-container">
           <div class="table-header">
             <div class="table-header-left">
-              <input id="inventorySearch" class="search-box" type="text" placeholder="상품명/코드 검색..."/>
+              <input id="inventorySearch" class="search-box" type="text" placeholder="상품명/코드/위치 검색..."/>
             </div>
             <div class="table-header-left">
-              <input id="barcodeScanInput" class="search-box" type="text" placeholder="바코드/상품코드 스캔"/>
-              <button class="btn-add" id="scanBarcodeBtn">바코드 검색</button>
               <button class="btn-add" id="openAdjustBtn">+ 재고 조정</button>
             </div>
           </div>
@@ -145,6 +196,7 @@
               <tr>
                 <th>상품코드</th>
                 <th>상품명</th>
+                <th>단위</th>
                 <th>위치</th>
                 <th>현재재고</th>
                 <th>안전재고</th>
@@ -175,7 +227,6 @@
               <option value="CREATE">생성(CREATE)</option>
               <option value="UPDATE">수정(UPDATE)</option>
               <option value="DELETE">삭제(DELETE)</option>
-              <option value="CANCEL">취소(CANCEL)</option>
             </select>
           </div>
 
@@ -188,13 +239,63 @@
                 <th>변동량</th>
                 <th>담당자</th>
                 <th>메모</th>
-                <th>관리</th>
+                <th>취소</th>
               </tr>
             </thead>
             <tbody id="historyTableBody"></tbody>
           </table>
         </div>
       </section>
+
+      <!-- 바코드 -->
+      <section id="barcodePage" class="page">
+        <div class="page-header">
+          <h1>바코드</h1>
+          <p>스캔(키보드 웨지)로 상품 호출 후 입고/출고/조정을 실행합니다</p>
+        </div>
+
+        <div class="table-container">
+          <div class="table-header">
+            <div class="table-header-left" style="display:flex; gap:8px; align-items:center;">
+              <input id="barcodeInput" class="search-box" type="text" placeholder="바코드 입력 후 Enter" />
+              <button class="btn-add" id="barcodeSearchBtn">조회</button>
+            </div>
+          </div>
+
+          <div style="padding:12px;">
+            <div id="barcodeResult" style="margin-bottom:12px;"></div>
+
+            <div class="input-group">
+              <label for="barcodeActionType">작업 유형</label>
+              <select id="barcodeActionType" required>
+                <option value="IN">입고(IN)</option>
+                <option value="OUT">출고(OUT)</option>
+                <option value="ADJUST">조정(ADJUST)</option>
+              </select>
+            </div>
+
+            <div class="input-group">
+              <label for="barcodeDelta">수량(delta)</label>
+              <input id="barcodeDelta" type="number" required />
+            </div>
+
+            <div class="input-group">
+              <label for="barcodeMemo">메모</label>
+              <input id="barcodeMemo" type="text" placeholder="선택사항" />
+            </div>
+
+            <div class="form-actions" style="justify-content:flex-start;">
+              <button class="btn-submit" id="barcodeApplyBtn" type="button">적용</button>
+              <button class="btn-cancel" id="barcodeClearBtn" type="button">초기화</button>
+            </div>
+
+            <p class="hint small" style="margin-top:8px;">
+              팁: 바코드 스캐너는 키보드 입력처럼 동작합니다. Enter로 조회됩니다.
+            </p>
+          </div>
+        </div>
+      </section>
+
     </div>
   </div>
 
@@ -213,18 +314,17 @@
           <label for="productCode">상품코드</label>
           <input id="productCode" type="text" required />
         </div>
-        <div class="input-group">
-          <label for="productBarcode">바코드</label>
-          <input id="productBarcode" type="text" placeholder="미입력 시 상품코드와 동일" />
-        </div>
+
         <div class="input-group">
           <label for="productName">상품명</label>
           <input id="productName" type="text" required />
         </div>
+
         <div class="input-group">
           <label for="productCategory">카테고리</label>
           <input id="productCategory" type="text" placeholder="예: 전자기기" />
         </div>
+
         <div class="input-group">
           <label for="productUnit">단위</label>
           <select id="productUnit">
@@ -232,40 +332,74 @@
             <option value="m">m</option>
           </select>
         </div>
+
+        <div class="input-group">
+          <label for="productBarcode">바코드</label>
+          <input id="productBarcode" type="text" placeholder="고유 바코드" />
+          <div class="hint small">같은 바코드는 다른 상품에 중복 등록할 수 없습니다.</div>
+        </div>
+
         <div class="input-group">
           <label for="productLocation">위치</label>
           <input id="productLocation" type="text" placeholder="예: A열 2층" />
         </div>
+
         <div class="input-group">
-          <label for="productCondition">신품/중고</label>
+          <label for="productCondition">상태(신품/중고)</label>
           <select id="productCondition">
-            <option value="new">신품</option>
-            <option value="used">중고</option>
+            <option value="new">신품(new)</option>
+            <option value="used">중고(used)</option>
           </select>
         </div>
+
         <div class="input-group">
-          <label for="productType">기성품/BOM</label>
+          <label for="productType">유형(기성품/BOM)</label>
           <select id="productType">
-            <option value="finished">기성품</option>
-            <option value="bom">BOM</option>
+            <option value="standard">기성품(standard)</option>
+            <option value="bom">BOM(bom)</option>
           </select>
         </div>
+
+        <div id="bomBox" class="bom-box" style="display:none;">
+          <div class="bom-head">
+            <div style="font-weight:700;">BOM 구성품</div>
+            <button id="addBomRowBtn" type="button" class="btn-add">+ 구성품 추가</button>
+          </div>
+
+          <table class="bom-table">
+            <thead>
+              <tr>
+                <th>구성품 코드</th>
+                <th>수량</th>
+                <th>삭제</th>
+              </tr>
+            </thead>
+            <tbody id="bomTableBody"></tbody>
+          </table>
+
+          <p class="hint small">예: 구성품 코드=P002, 수량=2</p>
+        </div>
+
         <div class="input-group">
           <label for="productSpec">규격</label>
-          <input id="productSpec" type="text" placeholder="규격 입력" />
+          <input id="productSpec" type="text" placeholder="예: 10mm, 2m 등" />
         </div>
+
         <div class="input-group">
-          <label for="productNote">비고/제품설명</label>
-          <input id="productNote" type="text" placeholder="제품설명 및 비고" />
+          <label for="productDescription">설명/비고</label>
+          <textarea id="productDescription" rows="3" placeholder="제품 설명, 비고 등을 입력하세요"></textarea>
         </div>
+
         <div class="input-group">
           <label for="productPrice">가격</label>
           <input id="productPrice" type="number" min="0" value="0" required/>
         </div>
+
         <div class="input-group">
           <label for="productSafetyStock">안전재고</label>
           <input id="productSafetyStock" type="number" min="0" value="10" required/>
         </div>
+
         <div class="input-group">
           <label for="productQty">초기 재고(qty)</label>
           <input id="productQty" type="number" min="0" value="0" required/>
@@ -302,6 +436,13 @@
           <label for="adjustProductCode">상품코드</label>
           <select id="adjustProductCode" required></select>
         </div>
+
+        <div class="input-group">
+          <label for="adjustUnitDisplay">단위</label>
+          <input id="adjustUnitDisplay" type="text" value="-" disabled />
+          <div id="adjustUnitHint" class="hint small"></div>
+        </div>
+
         <div class="input-group">
           <label for="adjustType">유형</label>
           <select id="adjustType" required>
@@ -326,6 +467,63 @@
       </form>
     </div>
   </div>
+  <!---------------------------------------------------->
+  <!-- 전체 상품 목록 모달 -->
+  <div id="allProductsModal" class="modal">
+    <div class="modal-content dashboard-modal">
+      <div class="modal-header">
+        <h2>전체 상품 목록</h2>
+        <span class="close-btn" id="closeAllProductsModal">&times;</span>
+      </div>
+      <div class="modal-body">
+        <div id="allProductsList" class="products-list">
+          <!-- JavaScript로 동적 생성 -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 재고 상세 모달 -->
+  <div id="stockDetailModal" class="modal">
+    <div class="modal-content dashboard-modal">
+      <div class="modal-header">
+        <h2>재고 상세</h2>
+        <span class="close-btn" id="closeStockDetailModal">&times;</span>
+      </div>
+      <div class="modal-body">
+        <div class="stock-summary">
+          <div class="summary-item">
+            <span>총 재고 수량</span>
+            <strong id="modalTotalStock">105개</strong>
+          </div>
+          <div class="summary-item">
+            <span>총 상품 종류</span>
+            <strong id="modalTotalProducts">5개</strong>
+          </div>
+        </div>
+        <div id="stockDetailList" class="stock-detail-list">
+          <!-- JavaScript로 동적 생성 -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 부족한 재고 목록 모달 -->
+  <div id="lowStockModal" class="modal">
+    <div class="modal-content dashboard-modal">
+      <div class="modal-header">
+        <h2>부족한 재고 목록</h2>
+        <span class="close-btn" id="closeLowStockModal">&times;</span>
+      </div>
+      <div class="modal-body">
+        <div id="lowStockList" class="low-stock-list">
+          <!-- JavaScript로 동적 생성 -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+<!---------------------------------------------------->
 
   <!-- 이미지 확대 모달 -->
   <div id="imageModal" class="modal">
@@ -340,6 +538,205 @@
     </div>
   </div>
 
+<!----------------------------------------------------------------->>
+  <script>
+    // 차트 관리
+    let productChart = null;
+    let categoryChart = null;
+
+    // 차트 초기화 함수
+    function initCharts() {
+      const productCtx = document.getElementById('productChart');
+      if (productCtx) {
+        productChart = new Chart(productCtx.getContext('2d'), {
+          type: 'doughnut',
+          data: {
+            labels: ['데이터 없음'],
+            datasets: [{
+              data: [1],
+              backgroundColor: ['#3B82F6', '#10B981', '#F59E0B', '#EC4899', '#8B5CF6', '#06B6D4', '#F43F5E', '#84CC16'],
+              borderWidth: 2,
+              borderColor: '#fff'
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom',
+                labels: { padding: 15, font: { size: 11 } }
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    const label = context.label || '';
+                    const value = context.parsed || 0;
+                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                    const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                    return `${label}: ${value}개 (${percentage}%)`;
+                  }
+                }
+              }
+            },
+            cutout: '60%'
+          }
+        });
+      }
+
+      const categoryCtx = document.getElementById('categoryChart');
+      if (categoryCtx) {
+        categoryChart = new Chart(categoryCtx.getContext('2d'), {
+          type: 'doughnut',
+          data: {
+            labels: ['데이터 없음'],
+            datasets: [{
+              data: [1],
+              backgroundColor: ['#3B82F6', '#8B5CF6', '#EC4899', '#10B981', '#F59E0B', '#06B6D4'],
+              borderWidth: 2,
+              borderColor: '#fff'
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom',
+                labels: { padding: 15, font: { size: 11 } }
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    const label = context.label || '';
+                    const value = context.parsed || 0;
+                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                    const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                    return `${label}: ${value}개 (${percentage}%)`;
+                  }
+                }
+              }
+            },
+            cutout: '60%'
+          }
+        });
+      }
+    }
+
+    // 차트 데이터 업데이트 함수 (dashboard.js에서 호출할 수 있도록 window에 등록)
+    window.updateCharts = function(products) {
+      if (!products || products.length === 0) {
+        if (productChart) {
+          productChart.data.labels = ['데이터 없음'];
+          productChart.data.datasets[0].data = [1];
+          productChart.update();
+        }
+        if (categoryChart) {
+          categoryChart.data.labels = ['데이터 없음'];
+          categoryChart.data.datasets[0].data = [1];
+          categoryChart.update();
+        }
+        document.getElementById('chartTotalStock').textContent = '0개';
+        document.getElementById('chartCategoryCount').textContent = '0개';
+        return;
+      }
+
+      // 상품별 재고 분포
+      const productStockData = products
+        .filter(p => p.qty > 0)
+        .map(p => ({ name: p.name, value: p.qty }))
+        .sort((a, b) => b.value - a.value)
+        .slice(0, 8);
+
+      // 카테고리별 재고 분포
+      const categoryMap = {};
+      products.forEach(p => {
+        const category = p.category || '기타';
+        categoryMap[category] = (categoryMap[category] || 0) + p.qty;
+      });
+      const categoryStockData = Object.entries(categoryMap)
+        .map(([name, value]) => ({ name, value }))
+        .sort((a, b) => b.value - a.value);
+
+      const totalStock = products.reduce((sum, p) => sum + p.qty, 0);
+
+      // 차트 업데이트
+      if (productChart && productStockData.length > 0) {
+        productChart.data.labels = productStockData.map(d => d.name);
+        productChart.data.datasets[0].data = productStockData.map(d => d.value);
+        productChart.update();
+      }
+
+      if (categoryChart && categoryStockData.length > 0) {
+        categoryChart.data.labels = categoryStockData.map(d => d.name);
+        categoryChart.data.datasets[0].data = categoryStockData.map(d => d.value);
+        categoryChart.update();
+      }
+
+      document.getElementById('chartTotalStock').textContent = `${totalStock}개`;
+      document.getElementById('chartCategoryCount').textContent = `${categoryStockData.length}개`;
+
+      // 재고 현황 표 업데이트
+      updateInventoryTable(products);
+    };
+
+    // 재고 현황 표 업데이트 함수
+    function updateInventoryTable(products) {
+      const tableBody = document.getElementById('dashInventoryTableBody');
+      if (!tableBody) return;
+
+      if (!products || products.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px;">데이터가 없습니다</td></tr>';
+        return;
+      }
+
+      // 테이블 HTML 생성
+      const rows = products.map(p => {
+        const qty = Number(p.qty || 0);
+        const safetyStock = Number(p.safetyStock || 0);
+        const optimalStock = safetyStock * 2; // 적정재고 = 안전재고 * 2로 가정
+
+        // 상태 결정
+        let statusClass = 'normal';
+        let statusText = '정상';
+        
+        if (qty < safetyStock) {
+          statusClass = 'critical';
+          statusText = '긴급';
+        } else if (qty < optimalStock) {
+          statusClass = 'warning';
+          statusText = '부족';
+        }
+
+        return `
+          <tr>
+            <td>${p.code || '-'}</td>
+            <td>${p.name || '-'}</td>
+            <td>
+              <span style="background-color: #f3e8ff; color: #7c3aed; padding: 4px 12px; border-radius: 12px; font-size: 12px;">
+                ${p.category || '기타'}
+              </span>
+            </td>
+            <td><strong>${qty}</strong></td>
+            <td>${safetyStock} / ${optimalStock}</td>
+            <td>
+              <span class="status-badge ${statusClass}">${statusText}</span>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      tableBody.innerHTML = rows;
+    }
+
+    // 페이지 로드 시 차트 초기화
+    document.addEventListener('DOMContentLoaded', function() {
+      initCharts();
+    });
+  </script>
+
+
+
   <script type="module" src="./js/utils.js"></script>
   <script type="module" src="./js/api.js"></script>
   <script type="module" src="./js/auth.js"></script>
@@ -347,5 +744,14 @@
   <script type="module" src="./js/products.js"></script>
   <script type="module" src="./js/inventory.js"></script>
   <script type="module" src="./js/history.js"></script>
+  <script type="module" src="./js/barcode.js"></script>
+
+  <script type="module">
+    // 모달 초기화
+    import { initDashboardModals } from './js/dashboard-modals.js';
+    document.addEventListener('DOMContentLoaded', () => {
+      initDashboardModals();
+    });
+  </script>
 </body>
 </html>
