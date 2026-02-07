@@ -1,69 +1,90 @@
 import { apiGet, apiPost } from "./api.js";
 import { showToast } from "./utils.js";
-import { loadInventoryPage } from "./inventory.js";
-import { loadProductsPage } from "./products.js";
 
 let cachedHistory = [];
 
-function canCancel() {
-  const role = JSON.parse(localStorage.getItem("authUser") || "{}").role;
-  return ["admin", "manager"].includes(role);
+function canUndoByRole() {
+  try {
+    const user = JSON.parse(localStorage.getItem("authUser") || "{}");
+    return user.role === "admin" || user.role === "manager";
+  } catch {
+    return false;
+  }
 }
 
-function isCancelable(item) {
-  return ["IN", "OUT", "ADJUST"].includes(item.type) && !item.canceledAt;
+async function undo(historyId) {
+  if (!canUndoByRole()) {
+    showToast("권한이 없습니다 (admin/manager)", true);
+    return;
+  }
+
+  try {
+    const data = await apiPost(`/history/${historyId}/undo`, {});
+    if (!data.ok) throw new Error(data.message || "취소 실패");
+    showToast("취소(undo) 완료");
+    await loadHistoryPage();
+  } catch (e) {
+    showToast(e.message || "취소 실패", true);
+  }
 }
 
 function renderTable(items) {
   const tbody = document.getElementById("historyTableBody");
   tbody.innerHTML = "";
 
+  const allowUndo = canUndoByRole();
+
   items.forEach((h) => {
     const tr = document.createElement("tr");
+
+    const undoBtn = allowUndo && ["IN", "OUT", "ADJUST"].includes(h.type) && !h.undoneAt
+      ? `<button class="btn-add" data-undo="${h.id}" style="padding:6px 10px;">취소</button>`
+      : `<span style="opacity:.6;">-</span>`;
+
     tr.innerHTML = `
       <td>${new Date(h.at).toLocaleString()}</td>
       <td>${h.productCode}</td>
-      <td>${h.type}${h.canceledAt ? "(취소됨)" : ""}</td>
+      <td>${h.type}</td>
       <td>${h.delta > 0 ? "+" : ""}${h.delta}</td>
       <td>${h.user}</td>
       <td>${h.memo || ""}</td>
-      <td class="action-btns"><button class="btn-edit" data-id="${h.id}" ${!canCancel() || !isCancelable(h) ? "disabled" : ""}>취소</button></td>
+      <td>${undoBtn}</td>
     `;
+
     tbody.appendChild(tr);
   });
 
-  tbody.querySelectorAll(".btn-edit").forEach((btn) => {
-    btn.onclick = async () => {
-      try {
-        await apiPost(`/history/${btn.dataset.id}/cancel`, {});
-        showToast("이력 취소 완료");
-        await loadHistoryPage(true);
-        await loadInventoryPage(true);
-        await loadProductsPage(true);
-      } catch (err) {
-        showToast(err.message, true);
-      }
-    };
+  // 이벤트 바인딩
+  tbody.querySelectorAll("[data-undo]").forEach((btn) => {
+    btn.addEventListener("click", () => undo(btn.getAttribute("data-undo")));
   });
 }
 
 function applyFilters() {
   const term = document.getElementById("historySearch").value.trim().toLowerCase();
   const type = document.getElementById("historyTypeFilter").value;
-  const filtered = cachedHistory.filter((h) => `${h.productCode}`.toLowerCase().includes(term) && (!type || h.type === type));
+
+  const filtered = cachedHistory.filter((h) => {
+    const matchSearch = `${h.productCode}`.toLowerCase().includes(term);
+    const matchType = !type || h.type === type;
+    return matchSearch && matchType;
+  });
+
   renderTable(filtered);
 }
 
-export async function loadHistoryPage(force = false) {
+export async function loadHistoryPage() {
   try {
-    if (force || cachedHistory.length === 0) {
-      const data = await apiGet("/history");
-      cachedHistory = data.history || [];
-    }
-    renderTable(cachedHistory);
-    document.getElementById("historySearch").oninput = applyFilters;
-    document.getElementById("historyTypeFilter").onchange = applyFilters;
-  } catch (err) {
-    showToast(err.message, true);
+    const data = await apiGet("/history");
+    if (!data.ok) throw new Error(data.message || "load failed");
+    cachedHistory = data.history || [];
+    applyFilters();
+  } catch (e) {
+    showToast("이력 로드 실패", true);
   }
 }
+
+window.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("historySearch").addEventListener("input", applyFilters);
+  document.getElementById("historyTypeFilter").addEventListener("change", applyFilters);
+});

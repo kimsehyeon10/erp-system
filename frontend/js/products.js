@@ -7,138 +7,85 @@ import { loadHistoryPage } from "./history.js";
 let cachedProducts = [];
 let pendingImageDataUrl = "";
 
-function getRole() {
-  const user = JSON.parse(localStorage.getItem("authUser") || "{}");
-  return user.role || "";
+function getUser() {
+  try {
+    return JSON.parse(localStorage.getItem("authUser") || "{}");
+  } catch {
+    return {};
+  }
 }
 
 function canEdit() {
-  return ["admin", "manager"].includes(getRole());
+  const user = getUser();
+  return user.role === "admin" || user.role === "manager";
 }
-
 function canDelete() {
-  return getRole() === "admin";
+  const user = getUser();
+  return user.role === "admin";
 }
-
 function canViewPrice() {
-  return ["admin", "manager"].includes(getRole());
+  const user = getUser();
+  return user.role === "admin" || user.role === "manager";
 }
 
 function openImageModal(product) {
   const modal = document.getElementById("imageModal");
-  document.getElementById("imageModalTitle").textContent = `${product.code} - ${product.name}`;
-  document.getElementById("imageModalImg").src = product.image || "";
+  const title = document.getElementById("imageModalTitle");
+  const img = document.getElementById("imageModalImg");
+
+  title.textContent = `${product.code} - ${product.name}`;
+  img.src = product.image || "";
   modal.classList.add("active");
 }
-
 function closeImageModal() {
   document.getElementById("imageModal").classList.remove("active");
 }
 
-function openModal(mode, product = null) {
-  document.getElementById("productModal").classList.add("active");
-  document.getElementById("productMode").value = mode;
-  pendingImageDataUrl = "";
-  document.getElementById("productImageFile").value = "";
+function readFileAsDataURL(file) {
+  return new Promise((resolve, reject) => {
+    const fr = new FileReader();
+    fr.onload = () => resolve(fr.result);
+    fr.onerror = () => reject(new Error("이미지 읽기 실패"));
+    fr.readAsDataURL(file);
+  });
+}
 
-  if (mode === "create") {
-    document.getElementById("productModalTitle").textContent = "상품 추가";
-    document.getElementById("productCode").value = "";
-    document.getElementById("productCode").disabled = false;
-    document.getElementById("productBarcode").value = "";
-    document.getElementById("productName").value = "";
-    document.getElementById("productCategory").value = "";
-    document.getElementById("productUnit").value = "ea";
-    document.getElementById("productLocation").value = "";
-    document.getElementById("productCondition").value = "new";
-    document.getElementById("productType").value = "finished";
-    document.getElementById("productSpec").value = "";
-    document.getElementById("productNote").value = "";
-    document.getElementById("productPrice").value = 0;
-    document.getElementById("productSafetyStock").value = 10;
-    document.getElementById("productQty").value = 0;
-  } else {
-    document.getElementById("productModalTitle").textContent = "상품 수정";
-    document.getElementById("productCode").value = product.code;
-    document.getElementById("productCode").disabled = true;
-    document.getElementById("productBarcode").value = product.barcode || product.code;
-    document.getElementById("productName").value = product.name;
-    document.getElementById("productCategory").value = product.category || "";
-    document.getElementById("productUnit").value = product.unit || "ea";
-    document.getElementById("productLocation").value = product.location || "";
-    document.getElementById("productCondition").value = product.condition || "new";
-    document.getElementById("productType").value = product.productType || "finished";
-    document.getElementById("productSpec").value = product.spec || "";
-    document.getElementById("productNote").value = product.note || "";
-    document.getElementById("productPrice").value = product.price || 0;
-    document.getElementById("productSafetyStock").value = product.safetyStock ?? 10;
-    document.getElementById("productQty").value = product.qty ?? 0;
+function el(id) {
+  return document.getElementById(id);
+}
+
+/** BOM UI */
+function setBomVisible(isBom) {
+  const box = el("bomBox");
+  box.style.display = isBom ? "block" : "none";
+  if (!isBom) el("bomTableBody").innerHTML = "";
+}
+
+function addBomRow(item = { code: "", qty: 1 }) {
+  const tbody = el("bomTableBody");
+  const tr = document.createElement("tr");
+
+  tr.innerHTML = `
+    <td><input class="bom-code" type="text" placeholder="구성품 코드" value="${item.code || ""}"/></td>
+    <td><input class="bom-qty" type="number" min="1" value="${Number(item.qty || 1)}"/></td>
+    <td><button type="button" class="btn-cancel bom-remove">삭제</button></td>
+  `;
+
+  tr.querySelector(".bom-remove").addEventListener("click", () => tr.remove());
+  tbody.appendChild(tr);
+}
+
+function collectBomItems() {
+  const rows = Array.from(el("bomTableBody").querySelectorAll("tr"));
+  const items = [];
+  for (const tr of rows) {
+    const code = (tr.querySelector(".bom-code")?.value || "").trim();
+    const qty = Number(tr.querySelector(".bom-qty")?.value || 0);
+    if (!code) continue;
+    if (!Number.isFinite(qty) || qty <= 0) continue;
+    items.push({ code, qty });
   }
-}
-
-function closeModal() {
-  document.getElementById("productModal").classList.remove("active");
-}
-
-function renderTable(products) {
-  const tbody = document.getElementById("productTableBody");
-  tbody.innerHTML = "";
-
-  products.forEach((p) => {
-    const status = badgeStatus(Number(p.qty || 0), Number(p.safetyStock || 0));
-    const tr = document.createElement("tr");
-    const imgHtml = p.image && p.image.length > 20
-      ? `<img class="thumb" data-action="img" data-code="${p.code}" src="${p.image}" alt="img"/>`
-      : `<img class="thumb empty" src="" alt="noimg"/>`;
-
-    tr.innerHTML = `
-      <td>${imgHtml}</td>
-      <td>${p.code}<div class="hint small">${p.barcode || "-"}</div></td>
-      <td>${p.name}<div class="hint small">${p.spec || ""}</div></td>
-      <td>${p.category || "-"}</td>
-      <td>${p.unit || "ea"}</td>
-      <td>${p.location || "-"}</td>
-      <td>${p.condition === "used" ? "중고" : "신품"}</td>
-      <td>${p.productType === "bom" ? "BOM" : "기성품"}</td>
-      <td>${canViewPrice() ? fmtMoney(p.price || 0) : "권한 필요"}</td>
-      <td>${Number(p.qty || 0)} ${p.unit || "ea"}</td>
-      <td><span class="badge ${status.cls}">${status.text}</span></td>
-      <td class="action-btns">
-        <button class="btn-edit" data-action="edit" data-code="${p.code}">수정</button>
-        <button class="btn-delete" data-action="delete" data-code="${p.code}">삭제</button>
-      </td>
-    `;
-    tbody.appendChild(tr);
-  });
-
-  tbody.querySelectorAll('img.thumb[data-action="img"]').forEach((img) => {
-    img.addEventListener("click", () => {
-      const product = cachedProducts.find((x) => x.code === img.getAttribute("data-code"));
-      if (product?.image) openImageModal(product);
-    });
-  });
-
-  tbody.querySelectorAll("button").forEach((btn) => {
-    const action = btn.getAttribute("data-action");
-    const code = btn.getAttribute("data-code");
-    if (action === "edit") {
-      btn.disabled = !canEdit();
-      btn.addEventListener("click", () => openModal("update", cachedProducts.find((x) => x.code === code)));
-    }
-    if (action === "delete") {
-      btn.disabled = !canDelete();
-      btn.addEventListener("click", async () => {
-        if (!confirm("정말 삭제하시겠습니까?")) return;
-        try {
-          await apiDelete(`/products/${code}`);
-          showToast("삭제 완료");
-          await refreshAll();
-        } catch (err) {
-          showToast(err.message, true);
-        }
-      });
-    }
-  });
+  return items;
 }
 
 async function fetchProducts() {
@@ -148,77 +95,254 @@ async function fetchProducts() {
 
 function applySearch(term) {
   const t = (term || "").toLowerCase();
-  const filtered = cachedProducts.filter((p) => `${p.code} ${p.barcode || ""} ${p.name}`.toLowerCase().includes(t));
+  const filtered = cachedProducts.filter((p) => {
+    const s = `${p.code} ${p.name} ${p.category || ""} ${p.location || ""} ${p.barcode || ""}`.toLowerCase();
+    return s.includes(t);
+  });
   renderTable(filtered);
 }
 
-function readFileAsDataURL(file) {
-  return new Promise((resolve, reject) => {
-    const fr = new FileReader();
-    fr.onload = () => resolve(fr.result);
-    fr.onerror = () => reject(new Error("파일 읽기 실패"));
-    fr.readAsDataURL(file);
+function openModal(mode, product = null) {
+  const modal = el("productModal");
+  modal.classList.add("active");
+
+  el("productMode").value = mode;
+
+  pendingImageDataUrl = "";
+  el("productImageFile").value = "";
+
+  el("productType").onchange = () => setBomVisible(el("productType").value === "bom");
+  el("addBomRowBtn").onclick = () => addBomRow();
+
+  if (mode === "create") {
+    el("productModalTitle").textContent = "상품 추가";
+    el("productCode").value = "";
+    el("productCode").disabled = false;
+
+    el("productName").value = "";
+    el("productCategory").value = "";
+    el("productUnit").value = "ea";
+
+    el("productBarcode").value = "";
+    el("productLocation").value = "";
+    el("productSpec").value = "";
+    el("productDescription").value = "";
+    el("productCondition").value = "new";
+    el("productType").value = "standard";
+    setBomVisible(false);
+
+    el("productPrice").value = 0;
+    el("productSafetyStock").value = 10;
+    el("productQty").value = 0;
+  } else {
+    el("productModalTitle").textContent = "상품 수정";
+    el("productCode").value = product.code;
+    el("productCode").disabled = true;
+
+    el("productName").value = product.name || "";
+    el("productCategory").value = product.category || "";
+    el("productUnit").value = product.unit || "ea";
+
+    el("productBarcode").value = product.barcode || "";
+    el("productLocation").value = product.location || "";
+    el("productSpec").value = product.spec || "";
+    el("productDescription").value = product.description || "";
+    el("productCondition").value = product.condition === "used" ? "used" : "new";
+    el("productType").value = product.type === "bom" ? "bom" : "standard";
+
+    setBomVisible(el("productType").value === "bom");
+    if (el("productType").value === "bom") {
+      el("bomTableBody").innerHTML = "";
+      const items = Array.isArray(product.bomItems) ? product.bomItems : [];
+      if (items.length === 0) addBomRow();
+      else items.forEach((it) => addBomRow({ code: it.code, qty: it.qty }));
+    }
+
+    el("productPrice").value = canViewPrice() ? (product.price || 0) : 0;
+    el("productSafetyStock").value = product.safetyStock ?? 10;
+    el("productQty").value = product.qty ?? 0;
+  }
+
+  el("productPrice").disabled = !canViewPrice();
+}
+
+function closeModal() {
+  el("productModal").classList.remove("active");
+}
+
+function badgeTextCondition(p) {
+  return p.condition === "used" ? "중고" : "신품";
+}
+function badgeTextType(p) {
+  return p.type === "bom" ? "BOM" : "기성품";
+}
+
+async function renderTable(products) {
+  const tbody = el("productTableBody");
+  tbody.innerHTML = "";
+
+  products.forEach((p) => {
+    const status = badgeStatus(Number(p.qty || 0), Number(p.safetyStock || 0));
+
+    const hasImg = !!(p.image && p.image.length > 20);
+    const imgHtml = hasImg
+      ? `<img class="thumb" data-action="img" data-code="${p.code}" src="${p.image}" alt="img"/>`
+      : `<img class="thumb empty" src="" alt="noimg"/>`;
+
+    const priceText = canViewPrice() ? fmtMoney(Number(p.price || 0)) : "-";
+    const unitText = ((p.unit || "ea") + "").toUpperCase();
+
+    const locationText = (p.location || "-");
+    const barcodeText = (p.barcode || "-");
+
+    const condBadge = `<span class="badge">${badgeTextCondition(p)}</span>`;
+    const typeBadge = `<span class="badge">${badgeTextType(p)}</span>`;
+
+     const categoryClass = `category-${(p.category || "기타").replace(/\s/g, "")}`;
+    const categoryBadge = p.category 
+      ? `<span class="category-badge ${categoryClass}">${p.category}</span>`
+      : `<span class="category-badge">-</span>`;
+
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${imgHtml}</td>
+      <td>${p.code}</td>
+      <td>${p.name}</td>
+      <td>${categoryBadge}</td>
+      <td>${unitText}</td>
+      <td>${locationText}</td>
+      <td>${barcodeText}</td>
+      <td>${condBadge}</td>
+      <td>${typeBadge}</td>
+      <td>${priceText}</td>
+      <td>${Number(p.qty || 0)}</td>
+      <td><span class="badge ${status.cls}">${status.text}</span></td>
+      <td class="action-btns">
+        <button class="btn-edit" data-action="edit" data-code="${p.code}">수정</button>
+        <button class="btn-delete" data-action="del" data-code="${p.code}">삭제</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
   });
-}
 
-function readFileAsArrayBuffer(file) {
-  return new Promise((resolve, reject) => {
-    const fr = new FileReader();
-    fr.onload = () => resolve(fr.result);
-    fr.onerror = () => reject(new Error("파일 읽기 실패"));
-    fr.readAsArrayBuffer(file);
+  tbody.querySelectorAll("[data-action]").forEach((node) => {
+    const act = node.getAttribute("data-action");
+    const code = node.getAttribute("data-code");
+    const product = cachedProducts.find((x) => x.code === code);
+    if (!product) return;
+
+    if (act === "img") {
+      node.addEventListener("click", () => openImageModal(product));
+    }
+
+    if (act === "edit") {
+      node.addEventListener("click", () => {
+        if (!canEdit()) {
+          showToast("수정 권한이 없습니다(admin/manager만 가능).", true);
+          return;
+        }
+        openModal("update", product);
+      });
+    }
+
+    if (act === "del") {
+      node.addEventListener("click", async () => {
+        if (!canDelete()) {
+          showToast("삭제 권한이 없습니다(admin만 가능).", true);
+          return;
+        }
+        if (!confirm(`${product.code} 삭제하시겠습니까?`)) return;
+
+        try {
+          await apiDelete(`/products/${product.code}`);
+          showToast("삭제 완료");
+          await loadProductsPage(true);
+          await loadInventoryPage(true);
+          await loadHistoryPage(true);
+          await loadDashboard();
+        } catch (err) {
+          showToast(err.message, true);
+        }
+      });
+    }
   });
-}
 
-function arrayBufferToBase64(buffer) {
-  const bytes = new Uint8Array(buffer);
-  let binary = "";
-  for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
-  return btoa(binary);
-}
-
-async function refreshAll() {
-  await loadProductsPage(true);
-  await loadInventoryPage(true);
-  await loadHistoryPage(true);
-  await loadDashboard();
+  if (!canDelete()) {
+    tbody.querySelectorAll(".btn-del").forEach((b) => (b.style.display = "none"));
+  }
 }
 
 async function handleSubmit(e) {
   e.preventDefault();
-  if (!canEdit()) return showToast("상품 저장 권한이 없습니다.", true);
 
-  const mode = document.getElementById("productMode").value;
-  const code = document.getElementById("productCode").value.trim();
-  const payload = {
-    barcode: document.getElementById("productBarcode").value.trim() || code,
-    name: document.getElementById("productName").value.trim(),
-    category: document.getElementById("productCategory").value.trim(),
-    unit: document.getElementById("productUnit").value,
-    location: document.getElementById("productLocation").value.trim(),
-    condition: document.getElementById("productCondition").value,
-    productType: document.getElementById("productType").value,
-    spec: document.getElementById("productSpec").value.trim(),
-    note: document.getElementById("productNote").value.trim(),
-    price: Number(document.getElementById("productPrice").value || 0),
-    safetyStock: Number(document.getElementById("productSafetyStock").value || 0),
-    qty: Number(document.getElementById("productQty").value || 0),
-  };
+  if (!canEdit()) {
+    showToast("상품 저장 권한이 없습니다(admin/manager만 가능).", true);
+    return;
+  }
 
-  const imgFile = document.getElementById("productImageFile").files[0];
-  if (imgFile) pendingImageDataUrl = await readFileAsDataURL(imgFile);
+  const mode = el("productMode").value;
+
+  const code = el("productCode").value.trim();
+  const name = el("productName").value.trim();
+  const category = el("productCategory").value.trim();
+  const unit = el("productUnit").value;
+
+  const barcode = el("productBarcode").value.trim();
+  const location = el("productLocation").value.trim();
+  const spec = el("productSpec").value.trim();
+  const description = el("productDescription").value.trim();
+  const condition = el("productCondition").value;
+  const type = el("productType").value;
+  const bomItems = type === "bom" ? collectBomItems() : [];
+
+  const price = Number(el("productPrice").value || 0);
+  const safetyStock = Number(el("productSafetyStock").value || 0);
+  const qty = Number(el("productQty").value || 0);
+
+  if (!code || !name) {
+    showToast("상품코드/상품명은 필수입니다.", true);
+    return;
+  }
+
+  const imgFile = el("productImageFile").files[0];
+  if (imgFile) {
+    try {
+      pendingImageDataUrl = await readFileAsDataURL(imgFile);
+    } catch (err) {
+      showToast(err.message, true);
+      return;
+    }
+  }
 
   try {
     if (mode === "create") {
-      await apiPost("/products", { code, ...payload, image: pendingImageDataUrl });
+      const body = {
+        code, name, category, unit, price, safetyStock, qty,
+        image: pendingImageDataUrl,
+        barcode, location, spec, description, condition, type, bomItems
+      };
+
+      await apiPost("/products", body);
       showToast("상품 추가 완료");
     } else {
-      if (pendingImageDataUrl) payload.image = pendingImageDataUrl;
-      await apiPut(`/products/${code}`, payload);
+      const body = {
+        name, category, unit, safetyStock,
+        barcode, location, spec, description, condition, type, bomItems,
+        qty
+      };
+
+      if (canViewPrice()) body.price = price;
+      if (pendingImageDataUrl) body.image = pendingImageDataUrl;
+
+      await apiPut(`/products/${code}`, body);
       showToast("상품 수정 완료");
     }
+
     closeModal();
-    await refreshAll();
+    await loadProductsPage(true);
+    await loadInventoryPage(true);
+    await loadHistoryPage(true);
+    await loadDashboard();
   } catch (err) {
     showToast(err.message, true);
   }
@@ -226,61 +350,129 @@ async function handleSubmit(e) {
 
 async function handleExportExcel() {
   try {
-    const user = JSON.parse(localStorage.getItem("authUser") || "{}");
-    const res = await fetch(`${API_BASE_URL}/products/export.xlsx`, { headers: { "x-user": user.username, "x-role": user.role } });
-    if (!res.ok) throw new Error("Export failed");
+    const user = getUser();
+    if (!user.username) {
+      showToast("로그인이 필요합니다.", true);
+      return;
+    }
+
+    const res = await fetch(`${API_BASE_URL}/products/export.xlsx`, {
+      method: "GET",
+      headers: { "x-user": user.username, "x-role": user.role }
+    });
+
+    if (!res.ok) {
+      const t = await res.text();
+      showToast(t || "엑셀 내보내기 실패", true);
+      return;
+    }
+
     const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
+    const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
     a.download = "products.xlsx";
     document.body.appendChild(a);
     a.click();
     a.remove();
-    URL.revokeObjectURL(url);
-  } catch (err) {
-    showToast(err.message, true);
+    window.URL.revokeObjectURL(url);
+  } catch {
+    showToast("엑셀 내보내기 실패", true);
   }
 }
 
-async function handleImportExcel(file, mode = "merge") {
+async function handleImportExcel(file, mode) {
   try {
-    if (!canEdit()) return showToast("엑셀 가져오기는 admin/manager만 가능합니다.", true);
-    const ab = await readFileAsArrayBuffer(file);
-    const base64 = arrayBufferToBase64(ab);
-    const data = await apiPost(`/products/import?mode=${encodeURIComponent(mode)}`, { base64 });
-    showToast(`엑셀 가져오기 완료 (created:${data.created}, updated:${data.updated}, adjusted:${data.adjusted})`);
-    await refreshAll();
+    const user = getUser();
+    if (!user.username) {
+      showToast("로그인이 필요합니다.", true);
+      return;
+    }
+
+    const base64 = await new Promise((resolve, reject) => {
+      const fr = new FileReader();
+      fr.onload = () => {
+        const dataUrl = String(fr.result || "");
+        const commaIdx = dataUrl.indexOf(",");
+        if (commaIdx === -1) return reject(new Error("파일 읽기 실패"));
+        resolve(dataUrl.slice(commaIdx + 1));
+      };
+      fr.onerror = () => reject(new Error("파일 읽기 실패"));
+      fr.readAsDataURL(file);
+    });
+
+    const res = await fetch(`${API_BASE_URL}/products/import?mode=${encodeURIComponent(mode)}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-user": user.username,
+        "x-role": user.role
+      },
+      body: JSON.stringify({ base64 })
+    });
+
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.ok) {
+      showToast(data.message || "엑셀 가져오기 실패", true);
+      return;
+    }
+
+    showToast(`엑셀 가져오기 완료 (inserted:${data.inserted}, updated:${data.updated})`);
+    await loadProductsPage(true);
+    await loadInventoryPage(true);
+    await loadHistoryPage(true);
+    await loadDashboard();
   } catch (err) {
-    showToast(err.message, true);
+    showToast(err.message || "엑셀 가져오기 실패", true);
   }
 }
 
 export async function loadProductsPage(force = false) {
   try {
-    if (force || cachedProducts.length === 0) await fetchProducts();
+    if (force || cachedProducts.length === 0) {
+      await fetchProducts();
+    }
     renderTable(cachedProducts);
 
-    document.getElementById("productSearch").oninput = (e) => applySearch(e.target.value);
-    document.getElementById("openAddProductBtn").onclick = () => (canEdit() ? openModal("create") : showToast("권한 없음", true));
-    document.getElementById("closeProductModal").onclick = closeModal;
-    document.getElementById("cancelProductModal").onclick = closeModal;
-    document.getElementById("productForm").onsubmit = handleSubmit;
+    el("productSearch").oninput = () => applySearch(el("productSearch").value);
 
-    document.getElementById("closeImageModal").onclick = closeImageModal;
-    document.getElementById("imageModal").onclick = (e) => e.target?.id === "imageModal" && closeImageModal();
+    el("openAddProductBtn").onclick = () => {
+      if (!canEdit()) {
+        showToast("추가 권한이 없습니다(admin/manager만 가능).", true);
+        return;
+      }
+      openModal("create", null);
+    };
 
-    document.getElementById("exportExcelBtn").onclick = handleExportExcel;
-    const input = document.getElementById("excelFileInput");
-    document.getElementById("importExcelBtn").onclick = () => {
-      if (!canEdit()) return showToast("엑셀 가져오기 권한 없음", true);
+    el("closeProductModal").onclick = closeModal;
+    el("cancelProductModal").onclick = closeModal;
+    el("productForm").onsubmit = handleSubmit;
+
+    el("closeImageModal").onclick = closeImageModal;
+    el("imageModal").addEventListener("click", (e) => {
+      if (e.target && e.target.id === "imageModal") closeImageModal();
+    });
+
+    el("exportExcelBtn").onclick = handleExportExcel;
+
+    const input = el("excelFileInput");
+    el("importExcelBtn").onclick = () => {
+      if (!canEdit()) {
+        showToast("엑셀 가져오기는 admin/manager만 가능합니다.", true);
+        return;
+      }
       input.value = "";
       input.click();
     };
+
     input.onchange = async () => {
-      const file = input.files?.[0];
+      const file = input.files && input.files[0];
       if (!file) return;
-      const mode = confirm("확인=merge / 취소=replace") ? "merge" : "replace";
+
+      const mode = confirm("가져오기 모드 선택\n확인=merge(업데이트/추가)\n취소=replace(상품 전체 교체)")
+        ? "merge"
+        : "replace";
+
       await handleImportExcel(file, mode);
     };
   } catch (err) {

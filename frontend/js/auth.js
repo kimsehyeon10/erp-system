@@ -12,44 +12,16 @@ function setUserUI() {
   const user = JSON.parse(userStr);
   document.getElementById("currentUserName").textContent = user.username;
   document.getElementById("currentUserRole").textContent = user.role;
-}
 
-function goMain() {
   document.getElementById("loginPage").style.display = "none";
-  document.getElementById("mainPage").classList.add("active");
-
-  setUserUI();
-  setActivePage("dashboard");
-  loadDashboard();
+  document.getElementById("mainPage").style.display = "flex";
 }
 
-async function handleLogin(e) {
-  e.preventDefault();
-
-  const username = document.getElementById("username").value.trim();
-  const password = document.getElementById("password").value.trim();
-
-  try {
-    const data = await apiPost("/auth/login", { username, password });
-
-    localStorage.setItem("authToken", data.token);
-    localStorage.setItem("authUser", JSON.stringify(data.user));
-
-    showToast("로그인 성공!");
-    goMain();
-  } catch (err) {
-    showToast(err.message, true);
-  }
-}
-
-function handleLogout() {
-  localStorage.removeItem("authToken");
+function logout() {
   localStorage.removeItem("authUser");
-
-  document.getElementById("mainPage").classList.remove("active");
+  document.getElementById("mainPage").style.display = "none";
   document.getElementById("loginPage").style.display = "flex";
   document.getElementById("loginForm").reset();
-
   showToast("로그아웃되었습니다.");
 }
 
@@ -70,20 +42,50 @@ function initMenu() {
       } else if (page === "history") {
         setActivePage("history");
         loadHistoryPage();
+      } else if (page === "barcode") {
+        // ✅ 바코드는 별도 로딩 함수 없이 페이지 전환만 하면 됨
+        setActivePage("barcode");
       }
     });
   });
 }
 
 window.addEventListener("DOMContentLoaded", () => {
-  document.getElementById("loginForm").addEventListener("submit", handleLogin);
-  document.getElementById("logoutBtn").addEventListener("click", handleLogout);
-
-  initMenu();
-
-  // 이미 로그인 상태면 바로 진입
+  // 로그인 상태 복원
   const userStr = localStorage.getItem("authUser");
   if (userStr) {
-    goMain();
+    setUserUI();
+    initMenu();
+    setActivePage("dashboard");
+    loadDashboard();
+  } else {
+    document.getElementById("mainPage").style.display = "none";
+    document.getElementById("loginPage").style.display = "flex";
   }
+
+  document.getElementById("logoutBtn").addEventListener("click", logout);
+
+  document.getElementById("loginForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value.trim();
+
+    try {
+      const data = await apiPost("/auth/login", { username, password });
+      if (!data.ok) {
+        showToast(data.message || "로그인 실패", true);
+        return;
+      }
+
+      localStorage.setItem("authUser", JSON.stringify(data.user));
+      setUserUI();
+      initMenu();
+      setActivePage("dashboard");
+      loadDashboard();
+      showToast("로그인 성공");
+    } catch (err) {
+      showToast("서버 연결 실패", true);
+    }
+  });
 });
