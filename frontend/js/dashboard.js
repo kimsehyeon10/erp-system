@@ -13,6 +13,12 @@ export async function loadDashboard() {
     document.getElementById("dashTotalProducts").textContent = totalProducts;
     document.getElementById("dashTotalQty").textContent = totalQty.toLocaleString();
     document.getElementById("dashLowStockCount").textContent = lowStock;
+    
+    // 차트 업데이트 (try 블록 안에서 호출)
+    if (window.updateCharts) {
+
+      window.updateCharts(products);
+    }
   } catch (err) {
     showToast(err.message, true);
   }
