@@ -1,5 +1,5 @@
 import { apiGet, apiPost } from "./api.js";
-import { showToast } from "./utils.js";
+import { showToast, showConfirm } from "./utils.js";
 
 let cachedHistory = [];
 
@@ -17,6 +17,13 @@ async function undo(historyId) {
     showToast("권한이 없습니다 (admin/manager)", true);
     return;
   }
+
+  const confirmed = await showConfirm(
+    "이 재고 변동을 취소하시겠습니까?\n\n이 작업은 재고 수량을 이전 상태로 되돌립니다.",
+    "📦 재고 변동 취소"
+  );
+  
+  if (!confirmed) return;
 
   try {
     const data = await apiPost(`/history/${historyId}/undo`, {});
