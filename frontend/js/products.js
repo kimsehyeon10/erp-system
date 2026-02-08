@@ -1,7 +1,7 @@
 import { apiGet, apiPost, apiPut, apiDelete, API_BASE_URL } from "./api.js";
-import { showToast, badgeStatus, fmtMoney } from "./utils.js";
+import { showToast, badgeStatus, fmtMoney, showConfirm } from "./utils.js";
 import { loadDashboard } from "./dashboard.js";
-import { loadInventoryPage } from "./inventory.js";
+import { loadInventoryPage, showProductDetailModal } from "./inventory.js";
 import { loadHistoryPage } from "./history.js";
 
 let cachedProducts = [];
@@ -222,6 +222,17 @@ async function renderTable(products) {
         <button class="btn-delete" data-action="del" data-code="${p.code}">삭제</button>
       </td>
     `;
+    
+    // 행 클릭 시 상세 모달 (버튼 영역 제외)
+    tr.style.cursor = "pointer";
+    tr.addEventListener("click", (e) => {
+      // 버튼이나 이미지 클릭은 제외
+      if (e.target.closest('button') || e.target.closest('[data-action="img"]')) {
+        return;
+      }
+      showProductDetailModal(p);
+    });
+
     tbody.appendChild(tr);
   });
 
@@ -251,7 +262,13 @@ async function renderTable(products) {
           showToast("삭제 권한이 없습니다(admin만 가능).", true);
           return;
         }
-        if (!confirm(`${product.code} 삭제하시겠습니까?`)) return;
+        
+        const confirmed = await showConfirm(
+          `상품 "${product.name}" (${product.code})을(를) 정말 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.`,
+          "⚠️ 상품 삭제"
+        );
+        
+        if (!confirmed) return;
 
         try {
           await apiDelete(`/products/${product.code}`);
