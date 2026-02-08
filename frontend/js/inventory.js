@@ -1,13 +1,21 @@
 import { apiGet, apiPost } from "./api.js";
-import { showToast, badgeStatus } from "./utils.js";
+import { showToast, badgeStatus, fmtMoney } from "./utils.js";
 import { loadDashboard } from "./dashboard.js";
 import { loadProductsPage } from "./products.js";
 import { loadHistoryPage } from "./history.js";
 
 let cachedProducts = [];
+let currentFilter = {
+  search: '',
+  category: ''
+};
 
 function closeAdjustModal() {
   document.getElementById("adjustModal").classList.remove("active");
+}
+
+function closeDetailModal() {
+  document.getElementById("inventoryDetailModal").classList.remove("active");
 }
 
 function getProductByCode(code) {
@@ -71,7 +79,7 @@ function validateDeltaByUnit(delta, unitUpper) {
   return { ok: true };
 }
 
-function openAdjustModal() {
+function openAdjustModal(productCode = null) {
   const modal = document.getElementById("adjustModal");
   modal.classList.add("active");
 
@@ -87,6 +95,11 @@ function openAdjustModal() {
 
   document.getElementById("adjustForm").reset();
 
+  // 특정 제품이 지정되면 선택
+  if (productCode) {
+    select.value = productCode;
+  }
+
   // 이벤트
   select.onchange = updateAdjustUnitAndHint;
   document.getElementById("adjustType").onchange = updateAdjustUnitAndHint;
@@ -95,49 +108,160 @@ function openAdjustModal() {
   updateAdjustUnitAndHint();
 }
 
-async function renderTable(products) {
-  const tbody = document.getElementById("inventoryTableBody");
-  tbody.innerHTML = "";
+// 재고 상태 결정
+function getStockStatus(qty, safetyStock) {
+  if (qty === 0) return { class: 'critical', text: '품절', percentage: 0 };
+  if (qty < safetyStock) return { class: 'critical', text: '부족', percentage: (qty / safetyStock) * 100 };
+  if (qty < safetyStock * 2) return { class: 'low', text: '주의', percentage: (qty / (safetyStock * 2)) * 100 };
+  if (qty > safetyStock * 3) return { class: 'excess', text: '과잉', percentage: 100 };
+  return { class: 'normal', text: '정상', percentage: 100 };
+}
+
+// 요약 카드 업데이트
+function updateSummaryCards(products) {
+  const totalValue = products.reduce((sum, p) => sum + (Number(p.price || 0) * Number(p.qty || 0)), 0);
+  const totalItems = products.length;
+  const lowStockItems = products.filter(p => {
+    const qty = Number(p.qty || 0);
+    const safetyStock = Number(p.safetyStock || 0);
+    return qty < safetyStock;
+  }).length;
+  const excessItems = products.filter(p => {
+    const qty = Number(p.qty || 0);
+    const safetyStock = Number(p.safetyStock || 0);
+    return qty > safetyStock * 3;
+  }).length;
+
+  document.getElementById("inventoryTotalValue").textContent = fmtMoney(totalValue);
+  document.getElementById("inventoryTotalItems").textContent = `${totalItems} 개`;
+  document.getElementById("inventoryLowStock").textContent = `${lowStockItems} 개`;
+  document.getElementById("inventoryExcess").textContent = `${excessItems} 개`;
+}
+
+// 카드 렌더링
+function renderCards(products) {
+  const grid = document.getElementById("inventoryGrid");
+  const empty = document.getElementById("inventoryEmpty");
+  
+  if (products.length === 0) {
+    grid.style.display = "none";
+    empty.style.display = "block";
+    return;
+  }
+
+  grid.style.display = "grid";
+  empty.style.display = "none";
+  grid.innerHTML = "";
 
   products.forEach((p) => {
-    const status = badgeStatus(Number(p.qty || 0), Number(p.safetyStock || 0));
+    const qty = Number(p.qty || 0);
+    const safetyStock = Number(p.safetyStock || 0);
+    const status = getStockStatus(qty, safetyStock);
     const unitText = (p.unit ? String(p.unit).toUpperCase() : "EA");
-    const locationText = p.location ? String(p.location) : "-";
+    const categoryText = p.category || "기타";
 
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${p.code}</td>
-      <td>${p.name}</td>
-      <td>${unitText}</td>
-      <td>${locationText}</td>
-      <td>${Number(p.qty || 0)}</td>
-      <td>${Number(p.safetyStock || 0)}</td>
-      <td><span class="badge ${status.cls}">${status.text}</span></td>
-      <td class="action-btns">
-        <button class="btn-edit" data-code="${p.code}">조정</button>
-      </td>
+    const card = document.createElement("div");
+    card.className = "inventory-card";
+    card.innerHTML = `
+      <div class="inventory-card-header">
+        <div class="inventory-card-code">${p.code}</div>
+      </div>
+      <div class="inventory-card-status">
+        <span class="status-badge-new ${status.class}">${status.text}</span>
+      </div>
+      <div class="inventory-card-name">${p.name}</div>
+      <div class="inventory-card-category">${categoryText}</div>
+      <div class="inventory-card-info">
+        <div class="inventory-info-item">
+          <div class="inventory-info-label">현재 재고</div>
+          <div class="inventory-info-value highlight">${qty}</div>
+        </div>
+        <div class="inventory-info-item">
+          <div class="inventory-info-label">안전 재고</div>
+          <div class="inventory-info-value">${safetyStock}</div>
+        </div>
+        <div class="inventory-info-item">
+          <div class="inventory-info-label">단위</div>
+          <div class="inventory-info-value">${unitText}</div>
+        </div>
+      </div>
+      <div class="inventory-progress">
+        <div class="inventory-progress-bar ${status.class}" style="width: ${status.percentage}%"></div>
+      </div>
     `;
 
-    tbody.appendChild(tr);
-  });
-
-  tbody.querySelectorAll(".btn-edit").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      openAdjustModal();
-      const code = btn.getAttribute("data-code");
-      document.getElementById("adjustProductCode").value = code;
-      updateAdjustUnitAndHint();
-    });
+    card.addEventListener("click", () => showProductDetailModal(p));
+    grid.appendChild(card);
   });
 }
 
-function applySearch(term) {
-  const t = (term || "").toLowerCase();
-  const filtered = cachedProducts.filter((p) => {
-    const s = `${p.code} ${p.name} ${p.location || ""}`.toLowerCase();
-    return s.includes(t);
+// 상품 상세 정보 표시 (export for use in other modules)
+export function showProductDetailModal(product) {
+  const modal = document.getElementById("inventoryDetailModal");
+  
+  document.getElementById("detailCode").textContent = product.code || "-";
+  document.getElementById("detailName").textContent = product.name || "-";
+  document.getElementById("detailCategory").textContent = product.category || "-";
+  document.getElementById("detailLocation").textContent = product.location || "-";
+  document.getElementById("detailUnit").textContent = product.unit ? String(product.unit).toUpperCase() : "EA";
+  document.getElementById("detailQty").textContent = Number(product.qty || 0);
+  document.getElementById("detailSafetyStock").textContent = Number(product.safetyStock || 0);
+  document.getElementById("detailPrice").textContent = fmtMoney(product.price || 0);
+  document.getElementById("detailDescription").textContent = product.description || "설명이 없습니다.";
+
+  modal.classList.add("active");
+
+  // 재고 조정 버튼
+  document.getElementById("detailAdjustBtn").onclick = () => {
+    closeDetailModal();
+    openAdjustModal(product.code);
+  };
+}
+
+// 필터링 및 검색
+function applyFilters() {
+  let filtered = [...cachedProducts];
+
+  // 검색어 필터
+  if (currentFilter.search) {
+    const term = currentFilter.search.toLowerCase();
+    filtered = filtered.filter((p) => {
+      const searchStr = `${p.code} ${p.name} ${p.location || ""}`.toLowerCase();
+      return searchStr.includes(term);
+    });
+  }
+
+  // 카테고리 필터
+  if (currentFilter.category) {
+    filtered = filtered.filter(p => (p.category || "기타") === currentFilter.category);
+  }
+
+  renderCards(filtered);
+}
+
+// 카테고리 옵션 업데이트
+function updateCategoryOptions(products) {
+  const categories = new Set();
+  products.forEach(p => {
+    categories.add(p.category || "기타");
   });
-  renderTable(filtered);
+
+  const select = document.getElementById("inventoryCategoryFilter");
+  const currentValue = select.value;
+  
+  select.innerHTML = '<option value="">카테고리: 전체</option>';
+  
+  Array.from(categories).sort().forEach(cat => {
+    const option = document.createElement("option");
+    option.value = cat;
+    option.textContent = cat;
+    select.appendChild(option);
+  });
+
+  // 이전 선택값 복원
+  if (currentValue && Array.from(categories).includes(currentValue)) {
+    select.value = currentValue;
+  }
 }
 
 async function handleAdjustSubmit(e) {
@@ -174,6 +298,38 @@ async function handleAdjustSubmit(e) {
   }
 }
 
+// 요약 카드 클릭 핸들러
+function setupSummaryCardHandlers(products) {
+  // 총 재고 품목 카드
+  document.getElementById("inventoryTotalItemsCard").onclick = () => {
+    currentFilter.search = '';
+    currentFilter.category = '';
+    document.getElementById("inventorySearch").value = '';
+    document.getElementById("inventoryCategoryFilter").value = '';
+    applyFilters();
+  };
+
+  // 부족 재고 카드
+  document.getElementById("inventoryLowStockCard").onclick = () => {
+    const lowStockProducts = products.filter(p => {
+      const qty = Number(p.qty || 0);
+      const safetyStock = Number(p.safetyStock || 0);
+      return qty < safetyStock;
+    });
+    renderCards(lowStockProducts);
+  };
+
+  // 과잉 재고 카드
+  document.getElementById("inventoryExcessCard").onclick = () => {
+    const excessProducts = products.filter(p => {
+      const qty = Number(p.qty || 0);
+      const safetyStock = Number(p.safetyStock || 0);
+      return qty > safetyStock * 3;
+    });
+    renderCards(excessProducts);
+  };
+}
+
 export async function loadInventoryPage(force = false) {
   try {
     if (force || cachedProducts.length === 0) {
@@ -181,16 +337,52 @@ export async function loadInventoryPage(force = false) {
       cachedProducts = data.products || [];
     }
 
-    await renderTable(cachedProducts);
+    // 요약 카드 업데이트
+    updateSummaryCards(cachedProducts);
 
-    const search = document.getElementById("inventorySearch");
-    search.oninput = () => applySearch(search.value);
+    // 카테고리 옵션 업데이트
+    updateCategoryOptions(cachedProducts);
 
-    document.getElementById("openAdjustBtn").onclick = openAdjustModal;
+    // 카드 렌더링
+    renderCards(cachedProducts);
 
+    // 요약 카드 클릭 핸들러
+    setupSummaryCardHandlers(cachedProducts);
+
+    // 검색 이벤트
+    const searchInput = document.getElementById("inventorySearch");
+    searchInput.value = currentFilter.search;
+    searchInput.oninput = (e) => {
+      currentFilter.search = e.target.value;
+      applyFilters();
+    };
+
+    // 검색 버튼
+    document.querySelector(".inventory-search-btn").onclick = () => {
+      applyFilters();
+    };
+
+    // 엔터 키로 검색
+    searchInput.onkeypress = (e) => {
+      if (e.key === 'Enter') {
+        applyFilters();
+      }
+    };
+
+    // 카테고리 필터
+    document.getElementById("inventoryCategoryFilter").onchange = (e) => {
+      currentFilter.category = e.target.value;
+      applyFilters();
+    };
+
+    // 모달 닫기 버튼
+    document.getElementById("closeInventoryDetailModal").onclick = closeDetailModal;
+
+    // 조정 모달 관련 (기존 코드 유지)
     document.getElementById("closeAdjustModal").onclick = closeAdjustModal;
     document.getElementById("cancelAdjustModal").onclick = closeAdjustModal;
     document.getElementById("adjustForm").onsubmit = handleAdjustSubmit;
+
   } catch (err) {
     showToast(err.message, true);
   }
