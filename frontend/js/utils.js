@@ -30,3 +30,41 @@ export function setActivePage(pageName) {
   const page = document.getElementById(pageName + "Page");
   if (page) page.classList.add("active");
 }
+
+// Custom confirm dialog
+export function showConfirm(message, title = "확인") {
+  return new Promise((resolve) => {
+    const modal = document.getElementById("confirmModal");
+    const titleEl = document.getElementById("confirmModalTitle");
+    const messageEl = document.getElementById("confirmModalMessage");
+    const okBtn = document.getElementById("confirmOkBtn");
+    const cancelBtn = document.getElementById("confirmCancelBtn");
+    const closeBtn = document.getElementById("closeConfirmModal");
+
+    titleEl.textContent = title;
+    messageEl.textContent = message;
+    modal.classList.add("active");
+
+    const cleanup = () => {
+      modal.classList.remove("active");
+      okBtn.onclick = null;
+      cancelBtn.onclick = null;
+      closeBtn.onclick = null;
+    };
+
+    okBtn.onclick = () => {
+      cleanup();
+      resolve(true);
+    };
+
+    cancelBtn.onclick = () => {
+      cleanup();
+      resolve(false);
+    };
+
+    closeBtn.onclick = () => {
+      cleanup();
+      resolve(false);
+    };
+  });
+}
