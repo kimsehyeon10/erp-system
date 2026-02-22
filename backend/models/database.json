@@ -1,0 +1,604 @@
+{
+  "users": [
+    {
+      "username": "admin",
+      "password": "1234",
+      "role": "admin"
+    },
+    {
+      "username": "manager",
+      "password": "1234",
+      "role": "manager"
+    },
+    {
+      "username": "staff",
+      "password": "1234",
+      "role": "staff"
+    }
+  ],
+  "products": [
+    {
+      "id": "P001",
+      "code": "P001",
+      "name": "노트북 A",
+      "category": "전자기기",
+      "unit": "ea",
+      "qty": 15,
+      "price": 1200000,
+      "safetyStock": 30,
+      "image": "/uploads/excel_1771742305018_3be6ac3d076f.jpg",
+      "updatedAt": "2026-02-22T06:38:25.024Z",
+      "barcode": "P001",
+      "location": "A열 2층",
+      "spec": "15인치 / i7 / 16GB",
+      "note": "업무용 기본 모델",
+      "condition": "new",
+      "productType": "bom",
+      "unitCost": 1200000,
+      "bomItems": [
+        {
+          "componentCode": "P002",
+          "qtyPerUnit": 2
+        },
+        {
+          "componentCode": "P003",
+          "qtyPerUnit": 3
+        }
+      ]
+    },
+    {
+      "id": "P002",
+      "code": "P002",
+      "name": "마우스 B",
+      "category": "주변기기",
+      "unit": "ea",
+      "qty": 90,
+      "price": 35000,
+      "safetyStock": 20,
+      "image": "/uploads/excel_1771742305019_5ea4f8a39d49.jpg",
+      "updatedAt": "2026-02-22T06:38:25.024Z",
+      "barcode": "P002",
+      "location": "B열 1층",
+      "spec": "무선 / 블루투스",
+      "note": "프로모션 상품",
+      "condition": "used",
+      "productType": "finished",
+      "unitCost": 35000,
+      "bomItems": []
+    },
+    {
+      "id": "P003",
+      "code": "P003",
+      "name": "키보드 C",
+      "category": "주변기기",
+      "unit": "ea",
+      "qty": 85,
+      "price": 89000,
+      "safetyStock": 15,
+      "image": "/uploads/excel_1771742305021_40180ddef109.jpg",
+      "updatedAt": "2026-02-22T06:38:25.024Z",
+      "barcode": "P003",
+      "location": "C열 3층",
+      "spec": "기계식 / 청축",
+      "note": "BOM 구성품으로도 사용",
+      "condition": "new",
+      "productType": "bom",
+      "unitCost": 89000,
+      "bomItems": []
+    }
+  ],
+  "history": [
+    {
+      "id": "H_1771742305024_f3ac8cb20bf578",
+      "productCode": "P003",
+      "type": "UPDATE",
+      "delta": 0,
+      "memo": "엑셀 import 업데이트",
+      "user": "admin",
+      "at": "2026-02-22T06:38:25.024Z"
+    },
+    {
+      "id": "H_1771742305024_00f504dd0cdef",
+      "productCode": "P002",
+      "type": "UPDATE",
+      "delta": 0,
+      "memo": "엑셀 import 업데이트",
+      "user": "admin",
+      "at": "2026-02-22T06:38:25.024Z"
+    },
+    {
+      "id": "H_1771742305024_aa5c2786166d7",
+      "productCode": "P001",
+      "type": "UPDATE",
+      "delta": 0,
+      "memo": "엑셀 import 업데이트",
+      "user": "admin",
+      "at": "2026-02-22T06:38:25.024Z"
+    },
+    {
+      "id": "H_1771742269324_6c1fe74487fcd",
+      "productCode": "P001",
+      "type": "UPDATE",
+      "delta": 0,
+      "memo": "상품 정보 수정",
+      "user": "admin",
+      "at": "2026-02-22T06:37:49.324Z",
+      "beforeState": {}
+    },
+    {
+      "id": "H_1771660525137_e2acaa4c0ac92",
+      "productCode": "P003",
+      "type": "UPDATE",
+      "delta": 0,
+      "memo": "엑셀 import 업데이트",
+      "user": "admin",
+      "at": "2026-02-21T07:55:25.137Z"
+    },
+    {
+      "id": "H_1771660525137_1c298be911ef",
+      "productCode": "P002",
+      "type": "UPDATE",
+      "delta": 0,
+      "memo": "엑셀 import 업데이트",
+      "user": "admin",
+      "at": "2026-02-21T07:55:25.137Z"
+    },
+    {
+      "id": "H_1771660525137_d8802766272ab",
+      "productCode": "P001",
+      "type": "UPDATE",
+      "delta": 0,
+      "memo": "엑셀 import 업데이트",
+      "user": "admin",
+      "at": "2026-02-21T07:55:25.137Z"
+    },
+    {
+      "id": "H_1771660516883_30212f6822f82",
+      "productCode": "P001",
+      "type": "UPDATE",
+      "delta": 0,
+      "memo": "상품 정보 수정",
+      "user": "admin",
+      "at": "2026-02-21T07:55:16.883Z",
+      "beforeState": {}
+    },
+    {
+      "id": "H_1771659462854_5bb2a8915f8718",
+      "productCode": "P003",
+      "type": "UPDATE",
+      "delta": 0,
+      "memo": "엑셀 import 업데이트",
+      "user": "admin",
+      "at": "2026-02-21T07:37:42.854Z"
+    },
+    {
+      "id": "H_1771659462854_df82b9e686699",
+      "productCode": "P002",
+      "type": "UPDATE",
+      "delta": 0,
+      "memo": "엑셀 import 업데이트",
+      "user": "admin",
+      "at": "2026-02-21T07:37:42.854Z"
+    },
+    {
+      "id": "H_1771659462854_cc9fdb43374e8",
+      "productCode": "P001",
+      "type": "UPDATE",
+      "delta": 0,
+      "memo": "엑셀 import 업데이트",
+      "user": "admin",
+      "at": "2026-02-21T07:37:42.854Z"
+    },
+    {
+      "id": "H_1771659455908_e05e403fc04648",
+      "productCode": "P001",
+      "type": "UPDATE",
+      "delta": 0,
+      "memo": "상품 정보 수정",
+      "user": "admin",
+      "at": "2026-02-21T07:37:35.908Z",
+      "beforeState": {}
+    },
+    {
+      "id": "H_1771659444927_8d5a0a872419a",
+      "productCode": "P003",
+      "type": "UPDATE",
+      "delta": 0,
+      "memo": "엑셀 import 업데이트",
+      "user": "admin",
+      "at": "2026-02-21T07:37:24.927Z"
+    },
+    {
+      "id": "H_1771659444927_72e4166115506",
+      "productCode": "P002",
+      "type": "UPDATE",
+      "delta": 0,
+      "memo": "엑셀 import 업데이트",
+      "user": "admin",
+      "at": "2026-02-21T07:37:24.927Z"
+    },
+    {
+      "id": "H_1771659444927_bc2c774e6c67b8",
+      "productCode": "P001",
+      "type": "UPDATE",
+      "delta": 0,
+      "memo": "엑셀 import 업데이트",
+      "user": "admin",
+      "at": "2026-02-21T07:37:24.927Z"
+    },
+    {
+      "id": "H_1771646980809_771535bb4c967",
+      "productCode": "P003",
+      "type": "UPDATE",
+      "delta": 0,
+      "memo": "엑셀 import 업데이트",
+      "user": "admin",
+      "at": "2026-02-21T04:09:40.809Z"
+    },
+    {
+      "id": "H_1771646980809_38ac4758d49be",
+      "productCode": "P002",
+      "type": "UPDATE",
+      "delta": 0,
+      "memo": "엑셀 import 업데이트",
+      "user": "admin",
+      "at": "2026-02-21T04:09:40.809Z"
+    },
+    {
+      "id": "H_1771646980809_921f6c8cc6dd8",
+      "productCode": "P001",
+      "type": "UPDATE",
+      "delta": 0,
+      "memo": "엑셀 import 업데이트",
+      "user": "admin",
+      "at": "2026-02-21T04:09:40.809Z"
+    },
+    {
+      "id": "H_1771646974517_06d92c600dc8e",
+      "productCode": "P003",
+      "type": "UPDATE",
+      "delta": 0,
+      "memo": "상품 정보 수정",
+      "user": "admin",
+      "at": "2026-02-21T04:09:34.517Z",
+      "beforeState": {}
+    },
+    {
+      "id": "H_1771641837382_e6f93caecd72c8",
+      "productCode": "P001",
+      "type": "IN",
+      "delta": 50,
+      "memo": "",
+      "user": "admin",
+      "at": "2026-02-21T02:43:57.382Z"
+    },
+    {
+      "id": "H_1770948960266_08203d431457",
+      "productCode": "P001",
+      "type": "CANCEL",
+      "delta": -500,
+      "memo": "이력 취소: H_1770948944929_b72e071e69a618",
+      "user": "admin",
+      "at": "2026-02-13T02:16:00.266Z",
+      "canceledTargetId": "H_1770948944929_b72e071e69a618"
+    },
+    {
+      "id": "H_1770948944929_b72e071e69a618",
+      "productCode": "P001",
+      "type": "IN",
+      "delta": 500,
+      "memo": "",
+      "user": "admin",
+      "at": "2026-02-13T02:15:44.929Z",
+      "canceledAt": "2026-02-13T02:16:00.266Z",
+      "canceledBy": "admin"
+    },
+    {
+      "id": "H_1770941153371_1e8445257c913",
+      "productCode": "P003",
+      "type": "UPDATE",
+      "delta": 0,
+      "memo": "상품 정보 수정",
+      "user": "admin",
+      "at": "2026-02-13T00:05:53.371Z",
+      "beforeState": {}
+    },
+    {
+      "id": "H_1770941144572_269e8d3f39ae2",
+      "productCode": "P002",
+      "type": "UPDATE",
+      "delta": 0,
+      "memo": "상품 정보 수정",
+      "user": "admin",
+      "at": "2026-02-13T00:05:44.572Z",
+      "beforeState": {}
+    },
+    {
+      "id": "H_1770800133558_2f8948ec850728",
+      "productCode": "P001",
+      "type": "UPDATE",
+      "delta": 0,
+      "memo": "상품 정보 수정",
+      "user": "admin",
+      "at": "2026-02-11T08:55:33.558Z",
+      "beforeState": {}
+    },
+    {
+      "id": "H_1770800112666_155c72e77b8b",
+      "productCode": "P001",
+      "type": "UPDATE",
+      "delta": 0,
+      "memo": "상품 정보 수정",
+      "user": "admin",
+      "at": "2026-02-11T08:55:12.666Z",
+      "beforeState": {}
+    },
+    {
+      "id": "H_1770794523508_4c97957c7ead48",
+      "productCode": "P003",
+      "type": "CANCEL",
+      "delta": -50,
+      "memo": "이력 취소: H_1770794519314_2a76117b80711",
+      "user": "admin",
+      "at": "2026-02-11T07:22:03.508Z",
+      "canceledTargetId": "H_1770794519314_2a76117b80711"
+    },
+    {
+      "id": "H_1770794519314_2a76117b80711",
+      "productCode": "P003",
+      "type": "IN",
+      "delta": 50,
+      "memo": "",
+      "user": "admin",
+      "at": "2026-02-11T07:21:59.314Z",
+      "canceledAt": "2026-02-11T07:22:03.508Z",
+      "canceledBy": "admin"
+    },
+    {
+      "id": "H_1770794505140_d8deabfc45b498",
+      "productCode": "P002",
+      "type": "CANCEL",
+      "delta": -30,
+      "memo": "이력 취소: H_1770794373051_d747f690069a9",
+      "user": "admin",
+      "at": "2026-02-11T07:21:45.140Z",
+      "canceledTargetId": "H_1770794373051_d747f690069a9"
+    },
+    {
+      "id": "H_1770794397926_4f68c9e3779678",
+      "productCode": "P002",
+      "type": "CANCEL",
+      "delta": -40,
+      "memo": "이력 취소: H_1770794394100_6994ab3f1dc858",
+      "user": "admin",
+      "at": "2026-02-11T07:19:57.926Z",
+      "canceledTargetId": "H_1770794394100_6994ab3f1dc858"
+    },
+    {
+      "id": "H_1770794394100_6994ab3f1dc858",
+      "productCode": "P002",
+      "type": "IN",
+      "delta": 40,
+      "memo": "",
+      "user": "admin",
+      "at": "2026-02-11T07:19:54.100Z",
+      "canceledAt": "2026-02-11T07:19:57.926Z",
+      "canceledBy": "admin"
+    },
+    {
+      "id": "H_1770794373051_d747f690069a9",
+      "productCode": "P002",
+      "type": "IN",
+      "delta": 30,
+      "memo": "",
+      "user": "admin",
+      "at": "2026-02-11T07:19:33.051Z",
+      "canceledAt": "2026-02-11T07:21:45.140Z",
+      "canceledBy": "admin"
+    },
+    {
+      "id": "H_1770775033329_89268a187aeeb8",
+      "productCode": "P003",
+      "type": "UPDATE",
+      "delta": 0,
+      "memo": "엑셀 import 업데이트",
+      "user": "admin",
+      "at": "2026-02-11T01:57:13.329Z"
+    },
+    {
+      "id": "H_1770775033329_5f19f1fd584e78",
+      "productCode": "P002",
+      "type": "UPDATE",
+      "delta": 0,
+      "memo": "엑셀 import 업데이트",
+      "user": "admin",
+      "at": "2026-02-11T01:57:13.329Z"
+    },
+    {
+      "id": "H_1770775033329_da024e22a07e58",
+      "productCode": "P001",
+      "type": "UPDATE",
+      "delta": 0,
+      "memo": "엑셀 import 업데이트",
+      "user": "admin",
+      "at": "2026-02-11T01:57:13.329Z"
+    },
+    {
+      "id": "H_1770775016940_c53ae66f99cc68",
+      "productCode": "P001",
+      "type": "UPDATE",
+      "delta": 0,
+      "memo": "상품 정보 수정",
+      "user": "admin",
+      "at": "2026-02-11T01:56:56.940Z",
+      "beforeState": {}
+    },
+    {
+      "id": "H_1770775000095_a7792a3da80468",
+      "productCode": "P001",
+      "type": "CANCEL",
+      "delta": -20,
+      "memo": "이력 취소: H001",
+      "user": "admin",
+      "at": "2026-02-11T01:56:40.095Z",
+      "canceledTargetId": "H001"
+    },
+    {
+      "id": "H_1770774997886_558f5337faaec8",
+      "productCode": "P002",
+      "type": "CANCEL",
+      "delta": 12,
+      "memo": "이력 취소: H002",
+      "user": "admin",
+      "at": "2026-02-11T01:56:37.886Z",
+      "canceledTargetId": "H002"
+    },
+    {
+      "id": "H001",
+      "productCode": "P001",
+      "type": "IN",
+      "delta": 20,
+      "memo": "정기 입고",
+      "user": "admin",
+      "at": "2026-02-01T05:23:00.000Z",
+      "canceledAt": "2026-02-11T01:56:40.095Z",
+      "canceledBy": "admin"
+    },
+    {
+      "id": "H002",
+      "productCode": "P002",
+      "type": "OUT",
+      "delta": -12,
+      "memo": "온라인 주문",
+      "user": "manager",
+      "at": "2026-02-01T02:15:00.000Z",
+      "canceledAt": "2026-02-11T01:56:37.885Z",
+      "canceledBy": "admin"
+    }
+  ],
+  "approvals": [
+    {
+      "id": "APR_001",
+      "productCode": "P002",
+      "productName": "마우스 B",
+      "type": "IN",
+      "delta": 20,
+      "memo": "재고 보충",
+      "reason": "안전재고 미달로 인한 긴급 발주",
+      "requestedBy": "staff",
+      "requestedAt": "2026-02-08T01:00:00.000Z",
+      "status": "pending",
+      "reviewedBy": null,
+      "reviewedAt": null,
+      "aiRecommendation": {
+        "summary": "마우스 B (P002) - IN 20개",
+        "currentStock": 8,
+        "safetyStock": 20,
+        "recommendations": [
+          {
+            "level": "warning",
+            "message": "현재 안전재고 미달 상태",
+            "suggestion": "승인 권장 - 긴급 발주 필요"
+          }
+        ]
+      }
+    }
+  ],
+  "ledger": [
+    {
+      "id": "LED_1771738922883_d08dd541406da",
+      "timestamp": "2026-02-22T05:42:02.883Z",
+      "userId": "test-admin",
+      "type": "PRODUCE",
+      "sku": "P001",
+      "qtyChange": 5,
+      "qtyBefore": 10,
+      "qtyAfter": 15,
+      "reason": "생산 완료",
+      "refId": "LOT_1771738922867_c672ca5a38078",
+      "meta": {
+        "lotId": "LOT_1771738922867_c672ca5a38078",
+        "bomSnapshot": [
+          {
+            "componentCode": "P002",
+            "qtyPerUnit": 2,
+            "neededQty": 10,
+            "unitCost": 35000,
+            "lineCost": 350000
+          },
+          {
+            "componentCode": "P003",
+            "qtyPerUnit": 3,
+            "neededQty": 15,
+            "unitCost": 89000,
+            "lineCost": 1335000
+          }
+        ],
+        "totalMaterialCost": 1685000,
+        "unitCostOfFinished": 337000
+      }
+    },
+    {
+      "id": "LED_1771738922883_7c548d6cbee98",
+      "timestamp": "2026-02-22T05:42:02.883Z",
+      "userId": "test-admin",
+      "type": "MATERIAL_OUT",
+      "sku": "P003",
+      "qtyChange": -15,
+      "qtyBefore": 100,
+      "qtyAfter": 85,
+      "reason": "생산(P001) 원자재 소모",
+      "refId": "LOT_1771738922867_c672ca5a38078",
+      "meta": {
+        "lotId": "LOT_1771738922867_c672ca5a38078",
+        "finishedProductCode": "P001",
+        "produceQty": 5
+      }
+    },
+    {
+      "id": "LED_1771738922883_0c7956f3046c5",
+      "timestamp": "2026-02-22T05:42:02.883Z",
+      "userId": "test-admin",
+      "type": "MATERIAL_OUT",
+      "sku": "P002",
+      "qtyChange": -10,
+      "qtyBefore": 100,
+      "qtyAfter": 90,
+      "reason": "생산(P001) 원자재 소모",
+      "refId": "LOT_1771738922867_c672ca5a38078",
+      "meta": {
+        "lotId": "LOT_1771738922867_c672ca5a38078",
+        "finishedProductCode": "P001",
+        "produceQty": 5
+      }
+    }
+  ],
+  "productionLots": [
+    {
+      "id": "LOT_1771738922867_c672ca5a38078",
+      "productCode": "P001",
+      "producedQty": 5,
+      "unitCost": 337000,
+      "totalCost": 1685000,
+      "bomSnapshot": [
+        {
+          "componentCode": "P002",
+          "qtyPerUnit": 2,
+          "neededQty": 10,
+          "unitCost": 35000,
+          "lineCost": 350000
+        },
+        {
+          "componentCode": "P003",
+          "qtyPerUnit": 3,
+          "neededQty": 15,
+          "unitCost": 89000,
+          "lineCost": 1335000
+        }
+      ],
+      "timestamp": "2026-02-22T05:42:02.883Z",
+      "userId": "test-admin"
+    }
+  ],
+  "sales": []
+}

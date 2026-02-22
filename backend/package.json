@@ -1,0 +1,32 @@
+{
+  "name": "erp-system-backend",
+  "version": "2.0.0",
+  "description": "ERP System Backend (Express + JSON DB + Socket.IO + Approvals + AI)",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "keywords": [
+    "erp",
+    "inventory",
+    "express",
+    "jsondb",
+    "socketio",
+    "realtime"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "socket.io": "^4.7.2",
+    "xlsx": "^0.18.5",
+    "proper-lockfile": "^4.1.2",
+    "multer": "^2.0.0",
+    "exceljs": "^4.4.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}

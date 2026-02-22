@@ -1,0 +1,21 @@
+{
+  "name": "erp-system-complete",
+  "version": "2.0.0",
+  "description": "ERP 재고관리 시스템 - 루트 실행",
+  "scripts": {
+    "install-all": "npm install && cd backend && npm install",
+    "dev": "npm run backend",
+    "backend": "cd backend && npm start",
+    "frontend": "cd frontend && python -m http.server 8080",
+    "start": "npm run backend"
+  },
+  "keywords": [
+    "erp",
+    "inventory",
+    "fullstack"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
