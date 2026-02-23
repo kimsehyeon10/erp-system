@@ -12,6 +12,7 @@
 
 const { readDB, writeDB, nowISO, genId } = require("../config/database");
 const { createLedgerEntry } = require("./ledgerController");
+const { withTransaction, findUserIdByUsername, dbErrorMessage } = require("../config/postgres");
 const XLSX   = require("xlsx");          // SheetJS (가져오기 메타데이터용 폴백)
 const fs     = require("fs");
 const path   = require("path");
@@ -397,57 +398,97 @@ function adjustInventory(req, res) {
   if (!roleAllowed(auth.role, ["admin", "manager", "staff"]))
     return res.status(403).json({ ok: false, message: "No permission" });
 
-  const { productCode, type, delta, memo, unitCost: bodyUnitCost } = req.body || {};
+  const { productCode, type, delta, memo } = req.body || {};
   if (!productCode || !type) return res.status(400).json({ ok: false, message: "productCode/type required" });
 
   const parsedDelta = Number(delta);
   if (!Number.isFinite(parsedDelta) || parsedDelta === 0)
     return res.status(400).json({ ok: false, message: "delta must be a number and not 0" });
 
-  const db  = readDB();
-  const idx = db.products.findIndex(p => p.code === productCode);
-  if (idx === -1) return res.status(404).json({ ok: false, message: "Product not found" });
+  (async () => {
+    try {
+      const result = await withTransaction(async (client) => {
+        const productRes = await client.query(
+          `SELECT id, code, name, category, safety_stock, qty_on_hand, created_at, updated_at
+             FROM products
+            WHERE code = $1
+            FOR UPDATE`,
+          [productCode]
+        );
 
-  const p = db.products[idx];
-  let nextQty = p.qty;
+        if (productRes.rowCount === 0) {
+          const err = new Error("Product not found");
+          err.status = 404;
+          throw err;
+        }
 
-  if      (type === "IN")     nextQty = p.qty + Math.abs(parsedDelta);
-  else if (type === "OUT")    nextQty = p.qty - Math.abs(parsedDelta);
-  else if (type === "ADJUST") nextQty = p.qty + parsedDelta;
-  else return res.status(400).json({ ok: false, message: "type must be IN|OUT|ADJUST" });
+        const p = productRes.rows[0];
+        let nextQty = Number(p.qty_on_hand);
 
-  if (nextQty < 0) return res.status(400).json({ ok: false, message: "Not enough stock" });
+        if (type === "IN") nextQty = Number(p.qty_on_hand) + Math.abs(parsedDelta);
+        else if (type === "OUT") nextQty = Number(p.qty_on_hand) - Math.abs(parsedDelta);
+        else if (type === "ADJUST") nextQty = Number(p.qty_on_hand) + parsedDelta;
+        else {
+          const err = new Error("type must be IN|OUT|ADJUST");
+          err.status = 400;
+          throw err;
+        }
 
-  const appliedDelta = type === "IN" ? Math.abs(parsedDelta) : type === "OUT" ? -Math.abs(parsedDelta) : parsedDelta;
-  const qtyBefore = p.qty;
+        if (nextQty < 0) {
+          const err = new Error("Not enough stock");
+          err.status = 400;
+          throw err;
+        }
 
-  // INBOUND 시 입력된 unitCost를 상품 master에 반영 (가중평균 원가 계산 개선)
-  const inboundUnitCost = type === "IN" && Number.isFinite(Number(bodyUnitCost)) && Number(bodyUnitCost) > 0
-    ? Number(bodyUnitCost)
-    : (p.unitCost || p.price || 0);
+        const appliedDelta = type === "IN" ? Math.abs(parsedDelta) : type === "OUT" ? -Math.abs(parsedDelta) : parsedDelta;
+        await client.query(
+          `UPDATE products
+              SET qty_on_hand = $1,
+                  updated_at = NOW()
+            WHERE id = $2`,
+          [nextQty, p.id]
+        );
 
-  db.products[idx] = {
-    ...p,
-    qty: nextQty,
-    updatedAt: nowISO(),
-    ...(type === "IN" && inboundUnitCost > 0 ? { unitCost: inboundUnitCost } : {}),
-  };
+        const requestedByUserId = await findUserIdByUsername(client, auth.username);
+        await client.query(
+          `INSERT INTO inventory_transactions
+            (product_id, tx_type, qty_delta, memo, requested_by, happened_at)
+           VALUES
+            ($1, $2, $3, $4, $5, NOW())`,
+          [p.id, type, appliedDelta, memo || "", requestedByUserId]
+        );
 
-  db.history.unshift({ id: genId("H"), productCode: p.code, type,
-    delta: appliedDelta, memo: memo || "", user: auth.username, at: nowISO() });
+        return {
+          id: p.id,
+          code: p.code,
+          name: p.name,
+          category: p.category,
+          safetyStock: Number(p.safety_stock || 0),
+          qty: nextQty,
+          qty_on_hand: nextQty,
+          createdAt: p.created_at,
+          updatedAt: new Date().toISOString(),
+          appliedDelta,
+        };
+      });
 
-  // ✅ 통합 레저 로그 (INBOUND 시 unitCost 포함 → 가중평균 원가 계산에 활용)
-  const ledgerType = type === "IN" ? "INBOUND" : type === "OUT" ? "OUTBOUND" : "ADJUST";
-  createLedgerEntry(db, {
-    type: ledgerType, sku: p.code,
-    qtyChange: appliedDelta, qtyBefore, qtyAfter: nextQty,
-    reason: memo || type, refId: "", userId: auth.username,
-    meta: { unitCost: inboundUnitCost },
-  });
-  writeDB(db);
-  emitInventoryUpdate(req, { message: `재고 ${type}: ${p.code} (${p.name}) ${appliedDelta > 0 ? "+" : ""}${appliedDelta}`,
-    productCode: p.code, kind: type, delta: appliedDelta, at: nowISO() });
-  return res.json({ ok: true, product: mapProductForRole(db.products[idx], auth.role) });
+      emitInventoryUpdate(req, {
+        message: `재고 ${type}: ${result.code} (${result.name}) ${result.appliedDelta > 0 ? "+" : ""}${result.appliedDelta}`,
+        productCode: result.code,
+        kind: type,
+        delta: result.appliedDelta,
+        at: nowISO(),
+      });
+
+      return res.json({ ok: true, product: mapProductForRole(result, auth.role) });
+    } catch (err) {
+      if (err.status) {
+        return res.status(err.status).json({ ok: false, message: err.message });
+      }
+      console.error("[POST /products/adjust]", err);
+      return res.status(500).json({ ok: false, message: dbErrorMessage(err) });
+    }
+  })();
 }
 
 // ═══════════════════════════════════════════════════════════════
