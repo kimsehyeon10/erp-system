@@ -284,3 +284,176 @@ http://192.168.1.100:5000
 **모든 요구사항이 완벽하게 구현되었습니다! 🎊**
 
 V6는 즉시 실행 가능하며, 모든 기능이 테스트되고 검증되었습니다.
+
+---
+
+## 🐘 PostgreSQL 개발환경 (ERP + AI 1차 MVP 준비)
+
+### 1) Docker Compose 실행
+```bash
+cd db
+docker compose up -d
+```
+
+### 2) PostgreSQL 접속 방법
+```bash
+# 컨테이너 내부 psql 접속
+docker compose exec postgres psql -U erp -d erp
+
+# 로컬 psql이 설치되어 있다면
+psql "postgresql://erp:erp@localhost:5432/erp"
+```
+
+### 3) 초기 마이그레이션 적용 방법
+```bash
+# db 디렉터리 기준
+docker compose exec -T postgres psql -U erp -d erp < migrations/001_init.sql
+```
+
+### 4) 테스트 요청 예시
+```bash
+# 테이블 생성 확인
+docker compose exec postgres psql -U erp -d erp -c "\dt"
+
+# users 스키마 확인
+docker compose exec postgres psql -U erp -d erp -c "\d users"
+```
+
+### 이번 변경 파일 목록
+- `db/docker-compose.yml`
+- `db/migrations/001_init.sql`
+- `README.md`
+
+### 5) 쓰기 API 로컬 테스트 (curl 예시)
+> 아래 예시는 PostgreSQL에 `products`, `approvals`, `users` 데이터가 있다고 가정합니다.
+
+```bash
+# A) 재고 조정 (POST /products/adjust)
+curl -X POST http://localhost:5000/products/adjust \
+  -H "Content-Type: application/json" \
+  -H "x-user: manager" \
+  -H "x-role: manager" \
+  -d '{
+    "productCode": "P-100",
+    "type": "IN",
+    "delta": 5,
+    "memo": "초기 입고"
+  }'
+
+# B) 승인 처리 (POST /approvals/:id/approve)
+curl -X POST http://localhost:5000/approvals/1/approve \
+  -H "Content-Type: application/json" \
+  -H "x-user: admin" \
+  -H "x-role: admin"
+
+# C) 거부 처리 (POST /approvals/:id/reject)
+curl -X POST http://localhost:5000/approvals/2/reject \
+  -H "Content-Type: application/json" \
+  -H "x-user: admin" \
+  -H "x-role: admin" \
+  -d '{
+    "rejectReason": "수량 근거 부족"
+  }'
+```
+
+### 6) 기대 결과
+- `/products/adjust`
+  - `products.qty_on_hand` 값이 요청값(type/delta)에 따라 변경됨
+  - `inventory_transactions`에 tx 레코드 1건 생성됨
+- `/approvals/:id/approve`
+  - `approvals.status = APPROVED`로 변경됨
+  - `products.qty_on_hand` 반영됨
+  - `inventory_transactions`에 승인 기반 tx 레코드 1건 생성됨
+- `/approvals/:id/reject`
+  - `approvals.status = REJECTED`로 변경됨
+  - 재고는 변경되지 않음
+
+### 이번 변경 파일 목록 (API PostgreSQL 전환)
+- `backend/config/postgres.js`
+- `backend/controllers/productController.js`
+- `backend/controllers/approvalController.js`
+- `backend/.env.example`
+- `backend/package.json`
+- `backend/package-lock.json`
+- `README.md`
+
+---
+
+## 🤖 ai-server (FastAPI) 추가
+
+### 폴더 구조
+- `ai-server/app/main.py`
+- `ai-server/app/routers/recommend.py`
+- `ai-server/app/services/recommend_service.py`
+- `ai-server/requirements.txt`
+
+### API
+- `POST /ai/recommend-order`
+
+요청 예시:
+```json
+{
+  "productCodes": ["P001", "P002"],
+  "reviewPeriodDays": 7
+}
+```
+
+응답 예시:
+```json
+{
+  "ok": true,
+  "data": [
+    {
+      "productCode": "P001",
+      "recommendedQty": 50,
+      "reason": "재고가 재주문점 이하",
+      "rop": 40,
+      "target": 80,
+      "currentQty": 30,
+      "confidence": 0.7
+    }
+  ]
+}
+```
+
+### 추천 로직 (MVP)
+- 최근 N일(`OUT_LOOKBACK_DAYS`, 기본 30일) OUT 트랜잭션 합산으로 일평균 수요 계산
+- `ROP = safety_stock + (lead_time_days * avg_daily_demand)`
+  - `lead_time_days`는 `LEAD_TIME_DAYS` 환경변수(기본 7)
+- `Target = ROP + (reviewPeriodDays * avg_daily_demand)`
+- `currentQty <= ROP`이면 `recommendedQty = max(Target - currentQty, 0)`
+- `confidence = min(OUT 기록 일수 / 30, 1.0)`
+
+### DB 연결
+- `DATABASE_URL` 환경변수 사용
+- 조회 테이블: `products`, `inventory_transactions`
+
+### 실행 방법
+```bash
+cd ai-server
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+
+# DB 연결 정보
+export DATABASE_URL="postgresql://erp:erp@localhost:5432/erp"
+# 선택값 (기본값 사용 가능)
+# export LEAD_TIME_DAYS=7
+# export OUT_LOOKBACK_DAYS=30
+
+uvicorn app.main:app --reload --port 8000
+```
+
+### 테스트 curl 예시
+```bash
+curl -X POST http://localhost:8000/ai/recommend-order \
+  -H "Content-Type: application/json" \
+  -d '{"productCodes":["P001","P002"],"reviewPeriodDays":7}'
+```
+
+### 이번 변경 파일 목록 (ai-server)
+- `ai-server/app/main.py`
+- `ai-server/app/routers/recommend.py`
+- `ai-server/app/services/recommend_service.py`
+- `ai-server/requirements.txt`
+- `README.md`

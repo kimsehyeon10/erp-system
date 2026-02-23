@@ -1,5 +1,6 @@
 const { readDB, writeDB, nowISO, genId } = require("../config/database");
 const { getIO, emitInventoryUpdate } = require("../utils/socketHelper");
+const { withTransaction, findUserIdByUsername, dbErrorMessage } = require("../config/postgres");
 
 function requireAuth(req, res) {
   const username = req.headers["x-user"];
@@ -91,164 +92,205 @@ function requestApproval(req, res) {
 }
 
 // 승인 처리
-function approveRequest(req, res) {
+async function approveRequest(req, res) {
   const auth = requireAuth(req, res);
   if (!auth) return;
 
   if (!roleAllowed(auth.role, ["admin", "manager"])) {
-    return res.status(403).json({ 
-      ok: false, 
-      message: "Only admin/manager can approve" 
+    return res.status(403).json({
+      ok: false,
+      message: "Only admin/manager can approve"
     });
   }
 
-  const approvalId = req.params.id;
-  const db = readDB();
-
-  if (!db.approvals) db.approvals = [];
-  
-  const approvalIdx = db.approvals.findIndex(a => a.id === approvalId);
-  if (approvalIdx === -1) {
-    return res.status(404).json({ ok: false, message: "Approval not found" });
+  const approvalId = Number(req.params.id);
+  if (!Number.isInteger(approvalId)) {
+    return res.status(400).json({ ok: false, message: "Invalid approval id" });
   }
 
-  const approval = db.approvals[approvalIdx];
-  
-  if (approval.status !== "pending") {
-    return res.status(400).json({ 
-      ok: false, 
-      message: `Already ${approval.status}` 
+  try {
+    const data = await withTransaction(async (client) => {
+      const approvalRes = await client.query(
+        `SELECT a.id, a.product_id, a.type, a.delta, a.reason, a.status,
+                a.requested_by, a.reviewed_by, a.requested_at, a.reviewed_at,
+                p.code AS product_code, p.name AS product_name, p.qty_on_hand
+           FROM approvals a
+           JOIN products p ON p.id = a.product_id
+          WHERE a.id = $1
+          FOR UPDATE`,
+        [approvalId]
+      );
+
+      if (approvalRes.rowCount === 0) {
+        const err = new Error("Approval not found");
+        err.status = 404;
+        throw err;
+      }
+
+      const approval = approvalRes.rows[0];
+      if (approval.status !== "PENDING") {
+        const err = new Error(`Already ${String(approval.status).toLowerCase()}`);
+        err.status = 400;
+        throw err;
+      }
+
+      const baseQty = Number(approval.qty_on_hand);
+      let nextQty = baseQty;
+      const type = approval.type;
+      const delta = Number(approval.delta);
+
+      if (type === "IN") nextQty = baseQty + Math.abs(delta);
+      else if (type === "OUT") nextQty = baseQty - Math.abs(delta);
+      else if (type === "ADJUST") nextQty = baseQty + delta;
+
+      if (nextQty < 0) {
+        const err = new Error("Not enough stock");
+        err.status = 400;
+        throw err;
+      }
+
+      const appliedDelta = type === "IN" ? Math.abs(delta) : type === "OUT" ? -Math.abs(delta) : delta;
+      const reviewerUserId = await findUserIdByUsername(client, auth.username);
+
+      await client.query(
+        `UPDATE products
+            SET qty_on_hand = $1,
+                updated_at = NOW()
+          WHERE id = $2`,
+        [nextQty, approval.product_id]
+      );
+
+      await client.query(
+        `INSERT INTO inventory_transactions
+          (product_id, tx_type, qty_delta, memo, requested_by, approved_by, happened_at)
+         VALUES
+          ($1, $2, $3, $4, $5, $6, NOW())`,
+        [
+          approval.product_id,
+          type,
+          appliedDelta,
+          `[승인됨] ${approval.reason || ""}`,
+          approval.requested_by,
+          reviewerUserId,
+        ]
+      );
+
+      const updatedApprovalRes = await client.query(
+        `UPDATE approvals
+            SET status = 'APPROVED',
+                reviewed_by = $2,
+                reviewed_at = NOW()
+          WHERE id = $1
+        RETURNING id, product_id, type, delta, reason, status, requested_by, reviewed_by, requested_at, reviewed_at`,
+        [approvalId, reviewerUserId]
+      );
+
+      return {
+        approval: updatedApprovalRes.rows[0],
+        product: {
+          code: approval.product_code,
+          name: approval.product_name,
+          qty: nextQty,
+          qty_on_hand: nextQty,
+        },
+      };
     });
-  }
 
-  // 재고 조정 실행
-  const productIdx = db.products.findIndex(p => p.code === approval.productCode);
-  if (productIdx === -1) {
-    return res.status(404).json({ ok: false, message: "Product not found" });
-  }
+    const io = req.io;
+    if (io) {
+      io.emit("inventory:update", {
+        message: `${data.product.code} 재고가 변경되었습니다.`,
+        product: data.product,
+      });
 
-  const product = db.products[productIdx];
-  let nextQty = product.qty;
+      io.emit("approval:approved", {
+        message: `${auth.username}님이 승인 요청을 승인했습니다.`,
+        approval: data.approval,
+      });
+    }
 
-  if (approval.type === "IN") {
-    nextQty = product.qty + Math.abs(approval.delta);
-  } else if (approval.type === "OUT") {
-    nextQty = product.qty - Math.abs(approval.delta);
-  } else if (approval.type === "ADJUST") {
-    nextQty = product.qty + approval.delta;
-  }
-
-  if (nextQty < 0) {
-    return res.status(400).json({ 
-      ok: false, 
-      message: "Not enough stock" 
+    return res.json({
+      ok: true,
+      approval: data.approval,
+      product: data.product,
     });
+  } catch (err) {
+    if (err.status) {
+      return res.status(err.status).json({ ok: false, message: err.message });
+    }
+    console.error("[POST /approvals/:id/approve]", err);
+    return res.status(500).json({ ok: false, message: dbErrorMessage(err) });
   }
-
-  // 재고 업데이트
-  db.products[productIdx] = { ...product, qty: nextQty, updatedAt: nowISO() };
-
-  // 이력 기록
-  const appliedDelta = approval.type === "IN" 
-    ? Math.abs(approval.delta) 
-    : approval.type === "OUT" 
-    ? -Math.abs(approval.delta) 
-    : approval.delta;
-
-  db.history.unshift({
-    id: genId("H"),
-    productCode: approval.productCode,
-    type: approval.type,
-    delta: appliedDelta,
-    memo: `[승인됨] ${approval.memo}`,
-    user: approval.requestedBy,
-    approvedBy: auth.username,
-    at: nowISO()
-  });
-
-  // 승인 상태 업데이트
-  db.approvals[approvalIdx] = {
-    ...approval,
-    status: "approved",
-    reviewedBy: auth.username,
-    reviewedAt: nowISO()
-  };
-
-  writeDB(db);
-
-  // 실시간 알림
-  const io = req.io;
-  if (io) {
-    io.emit("inventory:update", {
-      message: `${approval.productCode} 재고가 변경되었습니다.`,
-      product: db.products[productIdx]
-    });
-
-    io.emit("approval:approved", {
-      message: `${auth.username}님이 승인 요청을 승인했습니다.`,
-      approval: db.approvals[approvalIdx]
-    });
-  }
-
-  return res.json({ 
-    ok: true, 
-    approval: db.approvals[approvalIdx],
-    product: db.products[productIdx]
-  });
 }
 
 // 거부 처리
-function rejectRequest(req, res) {
+async function rejectRequest(req, res) {
   const auth = requireAuth(req, res);
   if (!auth) return;
 
   if (!roleAllowed(auth.role, ["admin", "manager"])) {
-    return res.status(403).json({ 
-      ok: false, 
-      message: "Only admin/manager can reject" 
+    return res.status(403).json({
+      ok: false,
+      message: "Only admin/manager can reject"
     });
   }
 
-  const approvalId = req.params.id;
+  const approvalId = Number(req.params.id);
+  if (!Number.isInteger(approvalId)) {
+    return res.status(400).json({ ok: false, message: "Invalid approval id" });
+  }
+
   const { rejectReason } = req.body || {};
 
-  const db = readDB();
-  if (!db.approvals) db.approvals = [];
+  try {
+    const approval = await withTransaction(async (client) => {
+      const approvalRes = await client.query(
+        `SELECT id, status FROM approvals WHERE id = $1 FOR UPDATE`,
+        [approvalId]
+      );
 
-  const approvalIdx = db.approvals.findIndex(a => a.id === approvalId);
-  if (approvalIdx === -1) {
-    return res.status(404).json({ ok: false, message: "Approval not found" });
-  }
+      if (approvalRes.rowCount === 0) {
+        const err = new Error("Approval not found");
+        err.status = 404;
+        throw err;
+      }
 
-  const approval = db.approvals[approvalIdx];
+      if (approvalRes.rows[0].status !== "PENDING") {
+        const err = new Error(`Already ${String(approvalRes.rows[0].status).toLowerCase()}`);
+        err.status = 400;
+        throw err;
+      }
 
-  if (approval.status !== "pending") {
-    return res.status(400).json({ 
-      ok: false, 
-      message: `Already ${approval.status}` 
+      const reviewerUserId = await findUserIdByUsername(client, auth.username);
+      const updated = await client.query(
+        `UPDATE approvals
+            SET status = 'REJECTED',
+                reviewed_by = $2,
+                reviewed_at = NOW(),
+                reason = COALESCE(NULLIF($3, ''), reason)
+          WHERE id = $1
+        RETURNING id, product_id, type, delta, reason, status, requested_by, reviewed_by, requested_at, reviewed_at`,
+        [approvalId, reviewerUserId, rejectReason || ""]
+      );
+      return updated.rows[0];
     });
+
+    const io = req.io;
+    if (io) {
+      io.emit("approval:rejected", {
+        message: `${auth.username}님이 승인 요청을 거부했습니다.`,
+        approval,
+      });
+    }
+
+    return res.json({ ok: true, approval });
+  } catch (err) {
+    if (err.status) {
+      return res.status(err.status).json({ ok: false, message: err.message });
+    }
+    console.error("[POST /approvals/:id/reject]", err);
+    return res.status(500).json({ ok: false, message: dbErrorMessage(err) });
   }
-
-  db.approvals[approvalIdx] = {
-    ...approval,
-    status: "rejected",
-    reviewedBy: auth.username,
-    reviewedAt: nowISO(),
-    rejectReason: rejectReason || "관리자 판단에 의해 거부됨"
-  };
-
-  writeDB(db);
-
-  // 실시간 알림
-  const io = req.io;
-  if (io) {
-    io.emit("approval:rejected", {
-      message: `${auth.username}님이 승인 요청을 거부했습니다.`,
-      approval: db.approvals[approvalIdx]
-    });
-  }
-
-  return res.json({ ok: true, approval: db.approvals[approvalIdx] });
 }
 
 // AI 추천 생성 (요약/탐지/추천만, 절대 자동 변경 금지)

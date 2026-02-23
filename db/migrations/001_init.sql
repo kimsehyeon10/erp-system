@@ -1,0 +1,42 @@
+CREATE TABLE IF NOT EXISTS users (
+  id BIGSERIAL PRIMARY KEY,
+  username VARCHAR(100) NOT NULL UNIQUE,
+  password_hash TEXT NOT NULL,
+  role VARCHAR(50) NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS products (
+  id BIGSERIAL PRIMARY KEY,
+  code VARCHAR(100) NOT NULL UNIQUE,
+  name VARCHAR(255) NOT NULL,
+  category VARCHAR(100),
+  safety_stock INTEGER NOT NULL DEFAULT 0,
+  qty_on_hand INTEGER NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS inventory_transactions (
+  id BIGSERIAL PRIMARY KEY,
+  product_id BIGINT NOT NULL REFERENCES products(id),
+  tx_type VARCHAR(50) NOT NULL,
+  qty_delta INTEGER NOT NULL,
+  memo TEXT,
+  requested_by BIGINT REFERENCES users(id),
+  approved_by BIGINT REFERENCES users(id),
+  happened_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS approvals (
+  id BIGSERIAL PRIMARY KEY,
+  product_id BIGINT NOT NULL REFERENCES products(id),
+  type VARCHAR(50) NOT NULL,
+  delta INTEGER NOT NULL,
+  reason TEXT,
+  status VARCHAR(50) NOT NULL DEFAULT 'PENDING',
+  requested_by BIGINT REFERENCES users(id),
+  reviewed_by BIGINT REFERENCES users(id),
+  requested_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  reviewed_at TIMESTAMPTZ
+);
