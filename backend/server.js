@@ -12,6 +12,7 @@ const approvalRoutes   = require("./routes/approvals");
 const ledgerRoutes     = require("./routes/ledger");
 const productionRoutes = require("./routes/production");
 const aiRiskRoutes     = require("./routes/ai.risk");
+const aiRoutes         = require("./routes/ai");       // ✅ 재고 리스크 예측 v2
 
 // ✅ 서버 시작 시 DB 스키마 자동 마이그레이션
 try {
@@ -118,6 +119,7 @@ app.use("/approvals", approvalRoutes);
 app.use("/ledger", ledgerRoutes);
 app.use("/production", productionRoutes);
 app.use("/ai", aiRiskRoutes);
+app.use("/api/ai", aiRoutes);    // ✅ 재고 리스크 예측 v2 (5가지 기능 + JSON fallback)
 
 app.use((req, res) => {
   res.status(404).json({ ok: false, message: "Not Found" });
@@ -148,6 +150,7 @@ server.listen(PORT, HOST, () => {
   console.log(`   Network: http://[Your-IP]:${PORT}`);
   console.log(`   Socket: ws://localhost:${PORT}`);
   console.log(`   Features: Real-time, Approvals, AI`);
+  console.log(`   AI API : http://localhost:${PORT}/api/ai/health`);;
   console.log(`=======================================\n`);
 });
 
