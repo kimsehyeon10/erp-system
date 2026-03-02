@@ -85,6 +85,44 @@
       "productType": "bom",
       "unitCost": 89000,
       "bomItems": []
+    },
+    {
+      "id": "P004",
+      "code": "P004",
+      "name": "모니터 D",
+      "category": "전자기기",
+      "unit": "ea",
+      "qty": 20,
+      "price": 350000,
+      "safetyStock": 5,
+      "unitCost": 490000,
+      "barcode": "P004",
+      "location": "D열 1층",
+      "spec": "27인치 4K",
+      "note": "단가 급변 시나리오",
+      "condition": "new",
+      "productType": "finished",
+      "bomItems": [],
+      "updatedAt": "2026-03-02T03:54:06.441Z"
+    },
+    {
+      "id": "P005",
+      "code": "P005",
+      "name": "USB Hub E",
+      "category": "주변기기",
+      "unit": "ea",
+      "qty": 50,
+      "price": 25000,
+      "safetyStock": 10,
+      "unitCost": 25000,
+      "barcode": "P005",
+      "location": "E열 2층",
+      "spec": "7포트 / USB3.0",
+      "note": "정상 기준선",
+      "condition": "new",
+      "productType": "finished",
+      "bomItems": [],
+      "updatedAt": "2026-03-02T03:54:06.441Z"
     }
   ],
   "history": [
@@ -474,6 +512,938 @@
       "at": "2026-02-01T02:15:00.000Z",
       "canceledAt": "2026-02-11T01:56:37.885Z",
       "canceledBy": "admin"
+    },
+    {
+      "id": "H_P001_OUT_1772423646443_eysbxhjf",
+      "productCode": "P001",
+      "type": "OUT",
+      "delta": -5,
+      "memo": "일일 출고 (D-1)",
+      "user": "manager",
+      "at": "2026-03-01T03:54:06.441Z"
+    },
+    {
+      "id": "H_P001_OUT_1772423646443_cwirt0u5",
+      "productCode": "P001",
+      "type": "OUT",
+      "delta": -5,
+      "memo": "일일 출고 (D-2)",
+      "user": "manager",
+      "at": "2026-02-28T03:54:06.441Z"
+    },
+    {
+      "id": "H_P001_OUT_1772423646443_5qrouyxt",
+      "productCode": "P001",
+      "type": "OUT",
+      "delta": -5,
+      "memo": "일일 출고 (D-3)",
+      "user": "manager",
+      "at": "2026-02-27T03:54:06.441Z"
+    },
+    {
+      "id": "H_P001_OUT_1772423646443_4q2jv12b",
+      "productCode": "P001",
+      "type": "OUT",
+      "delta": -5,
+      "memo": "일일 출고 (D-4)",
+      "user": "manager",
+      "at": "2026-02-26T03:54:06.441Z"
+    },
+    {
+      "id": "H_P001_OUT_1772423646443_811f4uw5",
+      "productCode": "P001",
+      "type": "OUT",
+      "delta": -5,
+      "memo": "일일 출고 (D-5)",
+      "user": "manager",
+      "at": "2026-02-25T03:54:06.441Z"
+    },
+    {
+      "id": "H_P001_OUT_1772423646443_dzasl1gy",
+      "productCode": "P001",
+      "type": "OUT",
+      "delta": -5,
+      "memo": "일일 출고 (D-6)",
+      "user": "manager",
+      "at": "2026-02-24T03:54:06.441Z"
+    },
+    {
+      "id": "H_P001_OUT_1772423646443_9vi12fsx",
+      "productCode": "P001",
+      "type": "OUT",
+      "delta": -5,
+      "memo": "일일 출고 (D-7)",
+      "user": "manager",
+      "at": "2026-02-23T03:54:06.441Z"
+    },
+    {
+      "id": "H_P001_OUT_1772423646443_zvxj81qm",
+      "productCode": "P001",
+      "type": "OUT",
+      "delta": -5,
+      "memo": "일일 출고 (D-8)",
+      "user": "manager",
+      "at": "2026-02-22T03:54:06.441Z"
+    },
+    {
+      "id": "H_P001_OUT_1772423646443_vzqtt510",
+      "productCode": "P001",
+      "type": "OUT",
+      "delta": -5,
+      "memo": "일일 출고 (D-9)",
+      "user": "manager",
+      "at": "2026-02-21T03:54:06.441Z"
+    },
+    {
+      "id": "H_P001_OUT_1772423646443_xtnuh57z",
+      "productCode": "P001",
+      "type": "OUT",
+      "delta": -5,
+      "memo": "일일 출고 (D-10)",
+      "user": "manager",
+      "at": "2026-02-20T03:54:06.441Z"
+    },
+    {
+      "id": "H_P001_OUT_1772423646443_ohffygxj",
+      "productCode": "P001",
+      "type": "OUT",
+      "delta": -5,
+      "memo": "일일 출고 (D-11)",
+      "user": "manager",
+      "at": "2026-02-19T03:54:06.441Z"
+    },
+    {
+      "id": "H_P001_OUT_1772423646443_kdx95pa9",
+      "productCode": "P001",
+      "type": "OUT",
+      "delta": -5,
+      "memo": "일일 출고 (D-12)",
+      "user": "manager",
+      "at": "2026-02-18T03:54:06.441Z"
+    },
+    {
+      "id": "H_P001_OUT_1772423646443_ov3t41yu",
+      "productCode": "P001",
+      "type": "OUT",
+      "delta": -5,
+      "memo": "일일 출고 (D-13)",
+      "user": "manager",
+      "at": "2026-02-17T03:54:06.441Z"
+    },
+    {
+      "id": "H_P001_OUT_1772423646443_2ptxud5c",
+      "productCode": "P001",
+      "type": "OUT",
+      "delta": -5,
+      "memo": "일일 출고 (D-14)",
+      "user": "manager",
+      "at": "2026-02-16T03:54:06.441Z"
+    },
+    {
+      "id": "H_P001_OUT_1772423646443_imz9tjpl",
+      "productCode": "P001",
+      "type": "OUT",
+      "delta": -5,
+      "memo": "일일 출고 (D-15)",
+      "user": "manager",
+      "at": "2026-02-15T03:54:06.441Z"
+    },
+    {
+      "id": "H_P001_OUT_1772423646443_gzdb1jxa",
+      "productCode": "P001",
+      "type": "OUT",
+      "delta": -5,
+      "memo": "일일 출고 (D-16)",
+      "user": "manager",
+      "at": "2026-02-14T03:54:06.441Z"
+    },
+    {
+      "id": "H_P001_OUT_1772423646443_t3jn2ef5",
+      "productCode": "P001",
+      "type": "OUT",
+      "delta": -5,
+      "memo": "일일 출고 (D-17)",
+      "user": "manager",
+      "at": "2026-02-13T03:54:06.441Z"
+    },
+    {
+      "id": "H_P001_OUT_1772423646443_03gllnwz",
+      "productCode": "P001",
+      "type": "OUT",
+      "delta": -5,
+      "memo": "일일 출고 (D-18)",
+      "user": "manager",
+      "at": "2026-02-12T03:54:06.441Z"
+    },
+    {
+      "id": "H_P001_OUT_1772423646443_ny9mh8kl",
+      "productCode": "P001",
+      "type": "OUT",
+      "delta": -5,
+      "memo": "일일 출고 (D-19)",
+      "user": "manager",
+      "at": "2026-02-11T03:54:06.441Z"
+    },
+    {
+      "id": "H_P001_OUT_1772423646443_n2yvv1yj",
+      "productCode": "P001",
+      "type": "OUT",
+      "delta": -5,
+      "memo": "일일 출고 (D-20)",
+      "user": "manager",
+      "at": "2026-02-10T03:54:06.441Z"
+    },
+    {
+      "id": "H_P001_OUT_1772423646443_srv93yrc",
+      "productCode": "P001",
+      "type": "OUT",
+      "delta": -5,
+      "memo": "일일 출고 (D-21)",
+      "user": "manager",
+      "at": "2026-02-09T03:54:06.441Z"
+    },
+    {
+      "id": "H_P001_OUT_1772423646443_wod2mgub",
+      "productCode": "P001",
+      "type": "OUT",
+      "delta": -5,
+      "memo": "일일 출고 (D-22)",
+      "user": "manager",
+      "at": "2026-02-08T03:54:06.441Z"
+    },
+    {
+      "id": "H_P001_OUT_1772423646443_lesy1x9j",
+      "productCode": "P001",
+      "type": "OUT",
+      "delta": -5,
+      "memo": "일일 출고 (D-23)",
+      "user": "manager",
+      "at": "2026-02-07T03:54:06.441Z"
+    },
+    {
+      "id": "H_P001_OUT_1772423646443_rj2q82hc",
+      "productCode": "P001",
+      "type": "OUT",
+      "delta": -5,
+      "memo": "일일 출고 (D-24)",
+      "user": "manager",
+      "at": "2026-02-06T03:54:06.441Z"
+    },
+    {
+      "id": "H_P001_OUT_1772423646443_k8xngxz1",
+      "productCode": "P001",
+      "type": "OUT",
+      "delta": -5,
+      "memo": "일일 출고 (D-25)",
+      "user": "manager",
+      "at": "2026-02-05T03:54:06.441Z"
+    },
+    {
+      "id": "H_P001_OUT_1772423646443_mjf1ggio",
+      "productCode": "P001",
+      "type": "OUT",
+      "delta": -5,
+      "memo": "일일 출고 (D-26)",
+      "user": "manager",
+      "at": "2026-02-04T03:54:06.441Z"
+    },
+    {
+      "id": "H_P001_OUT_1772423646443_ybw5wu3t",
+      "productCode": "P001",
+      "type": "OUT",
+      "delta": -5,
+      "memo": "일일 출고 (D-27)",
+      "user": "manager",
+      "at": "2026-02-03T03:54:06.441Z"
+    },
+    {
+      "id": "H_P001_OUT_1772423646443_cxc7t886",
+      "productCode": "P001",
+      "type": "OUT",
+      "delta": -5,
+      "memo": "일일 출고 (D-28)",
+      "user": "manager",
+      "at": "2026-02-02T03:54:06.441Z"
+    },
+    {
+      "id": "H_P001_OUT_1772423646443_06bwl8t5",
+      "productCode": "P001",
+      "type": "OUT",
+      "delta": -5,
+      "memo": "일일 출고 (D-29)",
+      "user": "manager",
+      "at": "2026-02-01T03:54:06.441Z"
+    },
+    {
+      "id": "H_P001_OUT_1772423646443_01nivytu",
+      "productCode": "P001",
+      "type": "OUT",
+      "delta": -5,
+      "memo": "일일 출고 (D-30)",
+      "user": "manager",
+      "at": "2026-01-31T03:54:06.441Z"
+    },
+    {
+      "id": "H_P002_IN_1772423646443_jv9dmjmj",
+      "productCode": "P002",
+      "type": "IN",
+      "delta": 90,
+      "memo": "대량 입고 (과잉재고 시나리오)",
+      "user": "admin",
+      "at": "2025-11-22T03:54:06.441Z",
+      "unitCost": 35000
+    },
+    {
+      "id": "H_P003_PREV_1772423646443_lxve6wk5",
+      "productCode": "P003",
+      "type": "OUT",
+      "delta": -1,
+      "memo": "정상 일일 출고 (D-2)",
+      "user": "staff",
+      "at": "2026-02-28T03:54:06.441Z"
+    },
+    {
+      "id": "H_P003_PREV_1772423646443_vuh1808a",
+      "productCode": "P003",
+      "type": "OUT",
+      "delta": -1,
+      "memo": "정상 일일 출고 (D-3)",
+      "user": "staff",
+      "at": "2026-02-27T03:54:06.441Z"
+    },
+    {
+      "id": "H_P003_PREV_1772423646443_xalkqopp",
+      "productCode": "P003",
+      "type": "OUT",
+      "delta": -1,
+      "memo": "정상 일일 출고 (D-4)",
+      "user": "staff",
+      "at": "2026-02-26T03:54:06.441Z"
+    },
+    {
+      "id": "H_P003_PREV_1772423646443_7lvusfa6",
+      "productCode": "P003",
+      "type": "OUT",
+      "delta": -1,
+      "memo": "정상 일일 출고 (D-5)",
+      "user": "staff",
+      "at": "2026-02-25T03:54:06.441Z"
+    },
+    {
+      "id": "H_P003_PREV_1772423646443_ul5zepgg",
+      "productCode": "P003",
+      "type": "OUT",
+      "delta": -1,
+      "memo": "정상 일일 출고 (D-6)",
+      "user": "staff",
+      "at": "2026-02-24T03:54:06.441Z"
+    },
+    {
+      "id": "H_P003_PREV_1772423646443_wt9naqjd",
+      "productCode": "P003",
+      "type": "OUT",
+      "delta": -1,
+      "memo": "정상 일일 출고 (D-7)",
+      "user": "staff",
+      "at": "2026-02-23T03:54:06.441Z"
+    },
+    {
+      "id": "H_P003_PREV_1772423646443_bpptwwx9",
+      "productCode": "P003",
+      "type": "OUT",
+      "delta": -1,
+      "memo": "정상 일일 출고 (D-8)",
+      "user": "staff",
+      "at": "2026-02-22T03:54:06.441Z"
+    },
+    {
+      "id": "H_P003_SPIKE_1772423646443_ay4pazxi",
+      "productCode": "P003",
+      "type": "OUT",
+      "delta": -25,
+      "memo": "긴급 대량 출고 (비정상 급증!)",
+      "user": "staff",
+      "at": "2026-03-02T01:54:06.441Z"
+    },
+    {
+      "id": "H_P004_IN_1772423646443_r0nsc8fk",
+      "productCode": "P004",
+      "type": "IN",
+      "delta": 5,
+      "memo": "정기 입고 (단가 350,000원)",
+      "user": "admin",
+      "at": "2026-02-25T03:54:06.441Z",
+      "unitCost": 350000
+    },
+    {
+      "id": "H_P004_IN_1772423646443_ahw4qcos",
+      "productCode": "P004",
+      "type": "IN",
+      "delta": 5,
+      "memo": "정기 입고 (단가 350,000원)",
+      "user": "admin",
+      "at": "2026-02-20T03:54:06.441Z",
+      "unitCost": 350000
+    },
+    {
+      "id": "H_P004_IN_1772423646443_ijp2sqql",
+      "productCode": "P004",
+      "type": "IN",
+      "delta": 5,
+      "memo": "정기 입고 (단가 350,000원)",
+      "user": "admin",
+      "at": "2026-02-15T03:54:06.441Z",
+      "unitCost": 350000
+    },
+    {
+      "id": "H_P004_IN_1772423646443_p7wbzuny",
+      "productCode": "P004",
+      "type": "IN",
+      "delta": 5,
+      "memo": "정기 입고 (단가 350,000원)",
+      "user": "admin",
+      "at": "2026-02-10T03:54:06.441Z",
+      "unitCost": 350000
+    },
+    {
+      "id": "H_P004_IN_1772423646443_btvp0062",
+      "productCode": "P004",
+      "type": "IN",
+      "delta": 5,
+      "memo": "정기 입고 (단가 350,000원)",
+      "user": "admin",
+      "at": "2026-02-05T03:54:06.441Z",
+      "unitCost": 350000
+    },
+    {
+      "id": "H_P004_IN_1772423646443_f614uy20",
+      "productCode": "P004",
+      "type": "IN",
+      "delta": 5,
+      "memo": "정기 입고 (단가 350,000원)",
+      "user": "admin",
+      "at": "2026-01-31T03:54:06.441Z",
+      "unitCost": 350000
+    },
+    {
+      "id": "H_P004_SPIKE_1772423646443_wuflypnh",
+      "productCode": "P004",
+      "type": "IN",
+      "delta": 5,
+      "memo": "최근 입고 — 단가 급등 (490,000원)",
+      "user": "admin",
+      "at": "2026-03-01T21:54:06.441Z",
+      "unitCost": 490000
+    },
+    {
+      "id": "H_P004_OUT_1772423646443_gbhkjgcv",
+      "productCode": "P004",
+      "type": "OUT",
+      "delta": -1,
+      "memo": "정기 출고 (D-1)",
+      "user": "manager",
+      "at": "2026-03-01T03:54:06.441Z"
+    },
+    {
+      "id": "H_P004_OUT_1772423646443_ulpyo4p1",
+      "productCode": "P004",
+      "type": "OUT",
+      "delta": -1,
+      "memo": "정기 출고 (D-2)",
+      "user": "manager",
+      "at": "2026-02-28T03:54:06.441Z"
+    },
+    {
+      "id": "H_P004_OUT_1772423646443_iu6ocrfn",
+      "productCode": "P004",
+      "type": "OUT",
+      "delta": -1,
+      "memo": "정기 출고 (D-3)",
+      "user": "manager",
+      "at": "2026-02-27T03:54:06.441Z"
+    },
+    {
+      "id": "H_P004_OUT_1772423646443_v9z7z52q",
+      "productCode": "P004",
+      "type": "OUT",
+      "delta": -1,
+      "memo": "정기 출고 (D-4)",
+      "user": "manager",
+      "at": "2026-02-26T03:54:06.441Z"
+    },
+    {
+      "id": "H_P004_OUT_1772423646443_grxx18ld",
+      "productCode": "P004",
+      "type": "OUT",
+      "delta": -1,
+      "memo": "정기 출고 (D-5)",
+      "user": "manager",
+      "at": "2026-02-25T03:54:06.441Z"
+    },
+    {
+      "id": "H_P004_OUT_1772423646443_twq4z8yo",
+      "productCode": "P004",
+      "type": "OUT",
+      "delta": -1,
+      "memo": "정기 출고 (D-6)",
+      "user": "manager",
+      "at": "2026-02-24T03:54:06.441Z"
+    },
+    {
+      "id": "H_P004_OUT_1772423646443_cogjtcmp",
+      "productCode": "P004",
+      "type": "OUT",
+      "delta": -1,
+      "memo": "정기 출고 (D-7)",
+      "user": "manager",
+      "at": "2026-02-23T03:54:06.441Z"
+    },
+    {
+      "id": "H_P004_OUT_1772423646443_qaw2jenk",
+      "productCode": "P004",
+      "type": "OUT",
+      "delta": -1,
+      "memo": "정기 출고 (D-8)",
+      "user": "manager",
+      "at": "2026-02-22T03:54:06.441Z"
+    },
+    {
+      "id": "H_P004_OUT_1772423646443_fa0u3fa4",
+      "productCode": "P004",
+      "type": "OUT",
+      "delta": -1,
+      "memo": "정기 출고 (D-9)",
+      "user": "manager",
+      "at": "2026-02-21T03:54:06.441Z"
+    },
+    {
+      "id": "H_P004_OUT_1772423646443_94u3l55p",
+      "productCode": "P004",
+      "type": "OUT",
+      "delta": -1,
+      "memo": "정기 출고 (D-10)",
+      "user": "manager",
+      "at": "2026-02-20T03:54:06.441Z"
+    },
+    {
+      "id": "H_P004_OUT_1772423646443_k0p4lacd",
+      "productCode": "P004",
+      "type": "OUT",
+      "delta": -1,
+      "memo": "정기 출고 (D-11)",
+      "user": "manager",
+      "at": "2026-02-19T03:54:06.441Z"
+    },
+    {
+      "id": "H_P004_OUT_1772423646443_g5cebc1d",
+      "productCode": "P004",
+      "type": "OUT",
+      "delta": -1,
+      "memo": "정기 출고 (D-12)",
+      "user": "manager",
+      "at": "2026-02-18T03:54:06.441Z"
+    },
+    {
+      "id": "H_P004_OUT_1772423646443_30ktw891",
+      "productCode": "P004",
+      "type": "OUT",
+      "delta": -1,
+      "memo": "정기 출고 (D-13)",
+      "user": "manager",
+      "at": "2026-02-17T03:54:06.441Z"
+    },
+    {
+      "id": "H_P004_OUT_1772423646443_yybs21t0",
+      "productCode": "P004",
+      "type": "OUT",
+      "delta": -1,
+      "memo": "정기 출고 (D-14)",
+      "user": "manager",
+      "at": "2026-02-16T03:54:06.441Z"
+    },
+    {
+      "id": "H_P004_OUT_1772423646443_rf8ewjxz",
+      "productCode": "P004",
+      "type": "OUT",
+      "delta": -1,
+      "memo": "정기 출고 (D-15)",
+      "user": "manager",
+      "at": "2026-02-15T03:54:06.441Z"
+    },
+    {
+      "id": "H_P004_OUT_1772423646443_o1s18v6k",
+      "productCode": "P004",
+      "type": "OUT",
+      "delta": -1,
+      "memo": "정기 출고 (D-16)",
+      "user": "manager",
+      "at": "2026-02-14T03:54:06.441Z"
+    },
+    {
+      "id": "H_P004_OUT_1772423646443_chx6i1w9",
+      "productCode": "P004",
+      "type": "OUT",
+      "delta": -1,
+      "memo": "정기 출고 (D-17)",
+      "user": "manager",
+      "at": "2026-02-13T03:54:06.441Z"
+    },
+    {
+      "id": "H_P004_OUT_1772423646443_1vgmlybg",
+      "productCode": "P004",
+      "type": "OUT",
+      "delta": -1,
+      "memo": "정기 출고 (D-18)",
+      "user": "manager",
+      "at": "2026-02-12T03:54:06.441Z"
+    },
+    {
+      "id": "H_P004_OUT_1772423646443_hsk98bba",
+      "productCode": "P004",
+      "type": "OUT",
+      "delta": -1,
+      "memo": "정기 출고 (D-19)",
+      "user": "manager",
+      "at": "2026-02-11T03:54:06.441Z"
+    },
+    {
+      "id": "H_P004_OUT_1772423646443_r2h5heo1",
+      "productCode": "P004",
+      "type": "OUT",
+      "delta": -1,
+      "memo": "정기 출고 (D-20)",
+      "user": "manager",
+      "at": "2026-02-10T03:54:06.441Z"
+    },
+    {
+      "id": "H_P005_OUT_1772423646443_rbzvmsm6",
+      "productCode": "P005",
+      "type": "OUT",
+      "delta": -2,
+      "memo": "정상 일일 출고 (D-1)",
+      "user": "staff",
+      "at": "2026-03-01T03:54:06.441Z"
+    },
+    {
+      "id": "H_P005_OUT_1772423646443_p4mluwf4",
+      "productCode": "P005",
+      "type": "OUT",
+      "delta": -2,
+      "memo": "정상 일일 출고 (D-2)",
+      "user": "staff",
+      "at": "2026-02-28T03:54:06.441Z"
+    },
+    {
+      "id": "H_P005_OUT_1772423646443_r3tebe5o",
+      "productCode": "P005",
+      "type": "OUT",
+      "delta": -2,
+      "memo": "정상 일일 출고 (D-3)",
+      "user": "staff",
+      "at": "2026-02-27T03:54:06.441Z"
+    },
+    {
+      "id": "H_P005_OUT_1772423646443_f5rrsfhn",
+      "productCode": "P005",
+      "type": "OUT",
+      "delta": -2,
+      "memo": "정상 일일 출고 (D-4)",
+      "user": "staff",
+      "at": "2026-02-26T03:54:06.441Z"
+    },
+    {
+      "id": "H_P005_OUT_1772423646443_lsv3p1bf",
+      "productCode": "P005",
+      "type": "OUT",
+      "delta": -2,
+      "memo": "정상 일일 출고 (D-5)",
+      "user": "staff",
+      "at": "2026-02-25T03:54:06.441Z"
+    },
+    {
+      "id": "H_P005_OUT_1772423646443_4lk35w4v",
+      "productCode": "P005",
+      "type": "OUT",
+      "delta": -2,
+      "memo": "정상 일일 출고 (D-6)",
+      "user": "staff",
+      "at": "2026-02-24T03:54:06.441Z"
+    },
+    {
+      "id": "H_P005_OUT_1772423646443_65eb4vla",
+      "productCode": "P005",
+      "type": "OUT",
+      "delta": -2,
+      "memo": "정상 일일 출고 (D-7)",
+      "user": "staff",
+      "at": "2026-02-23T03:54:06.441Z"
+    },
+    {
+      "id": "H_P005_OUT_1772423646443_px2rufgu",
+      "productCode": "P005",
+      "type": "OUT",
+      "delta": -2,
+      "memo": "정상 일일 출고 (D-8)",
+      "user": "staff",
+      "at": "2026-02-22T03:54:06.441Z"
+    },
+    {
+      "id": "H_P005_OUT_1772423646443_c9suchq9",
+      "productCode": "P005",
+      "type": "OUT",
+      "delta": -2,
+      "memo": "정상 일일 출고 (D-9)",
+      "user": "staff",
+      "at": "2026-02-21T03:54:06.441Z"
+    },
+    {
+      "id": "H_P005_OUT_1772423646443_rtins4kk",
+      "productCode": "P005",
+      "type": "OUT",
+      "delta": -2,
+      "memo": "정상 일일 출고 (D-10)",
+      "user": "staff",
+      "at": "2026-02-20T03:54:06.441Z"
+    },
+    {
+      "id": "H_P005_OUT_1772423646443_1dawl6z2",
+      "productCode": "P005",
+      "type": "OUT",
+      "delta": -2,
+      "memo": "정상 일일 출고 (D-11)",
+      "user": "staff",
+      "at": "2026-02-19T03:54:06.441Z"
+    },
+    {
+      "id": "H_P005_OUT_1772423646443_rykrclp4",
+      "productCode": "P005",
+      "type": "OUT",
+      "delta": -2,
+      "memo": "정상 일일 출고 (D-12)",
+      "user": "staff",
+      "at": "2026-02-18T03:54:06.441Z"
+    },
+    {
+      "id": "H_P005_OUT_1772423646443_pku9wy1n",
+      "productCode": "P005",
+      "type": "OUT",
+      "delta": -2,
+      "memo": "정상 일일 출고 (D-13)",
+      "user": "staff",
+      "at": "2026-02-17T03:54:06.441Z"
+    },
+    {
+      "id": "H_P005_OUT_1772423646443_3b94e7mm",
+      "productCode": "P005",
+      "type": "OUT",
+      "delta": -2,
+      "memo": "정상 일일 출고 (D-14)",
+      "user": "staff",
+      "at": "2026-02-16T03:54:06.441Z"
+    },
+    {
+      "id": "H_P005_OUT_1772423646443_2ortslmw",
+      "productCode": "P005",
+      "type": "OUT",
+      "delta": -2,
+      "memo": "정상 일일 출고 (D-15)",
+      "user": "staff",
+      "at": "2026-02-15T03:54:06.441Z"
+    },
+    {
+      "id": "H_P005_OUT_1772423646443_ff13sb2b",
+      "productCode": "P005",
+      "type": "OUT",
+      "delta": -2,
+      "memo": "정상 일일 출고 (D-16)",
+      "user": "staff",
+      "at": "2026-02-14T03:54:06.441Z"
+    },
+    {
+      "id": "H_P005_OUT_1772423646443_wvoyk16b",
+      "productCode": "P005",
+      "type": "OUT",
+      "delta": -2,
+      "memo": "정상 일일 출고 (D-17)",
+      "user": "staff",
+      "at": "2026-02-13T03:54:06.441Z"
+    },
+    {
+      "id": "H_P005_OUT_1772423646443_rxywi8ab",
+      "productCode": "P005",
+      "type": "OUT",
+      "delta": -2,
+      "memo": "정상 일일 출고 (D-18)",
+      "user": "staff",
+      "at": "2026-02-12T03:54:06.441Z"
+    },
+    {
+      "id": "H_P005_OUT_1772423646443_6q5ar54t",
+      "productCode": "P005",
+      "type": "OUT",
+      "delta": -2,
+      "memo": "정상 일일 출고 (D-19)",
+      "user": "staff",
+      "at": "2026-02-11T03:54:06.441Z"
+    },
+    {
+      "id": "H_P005_OUT_1772423646443_nsh0zbix",
+      "productCode": "P005",
+      "type": "OUT",
+      "delta": -2,
+      "memo": "정상 일일 출고 (D-20)",
+      "user": "staff",
+      "at": "2026-02-10T03:54:06.441Z"
+    },
+    {
+      "id": "H_P005_OUT_1772423646443_bnf88xs6",
+      "productCode": "P005",
+      "type": "OUT",
+      "delta": -2,
+      "memo": "정상 일일 출고 (D-21)",
+      "user": "staff",
+      "at": "2026-02-09T03:54:06.441Z"
+    },
+    {
+      "id": "H_P005_OUT_1772423646443_ho3ii8wx",
+      "productCode": "P005",
+      "type": "OUT",
+      "delta": -2,
+      "memo": "정상 일일 출고 (D-22)",
+      "user": "staff",
+      "at": "2026-02-08T03:54:06.441Z"
+    },
+    {
+      "id": "H_P005_OUT_1772423646443_0fzazscc",
+      "productCode": "P005",
+      "type": "OUT",
+      "delta": -2,
+      "memo": "정상 일일 출고 (D-23)",
+      "user": "staff",
+      "at": "2026-02-07T03:54:06.441Z"
+    },
+    {
+      "id": "H_P005_OUT_1772423646443_iaq22m4m",
+      "productCode": "P005",
+      "type": "OUT",
+      "delta": -2,
+      "memo": "정상 일일 출고 (D-24)",
+      "user": "staff",
+      "at": "2026-02-06T03:54:06.441Z"
+    },
+    {
+      "id": "H_P005_OUT_1772423646443_emu8a18h",
+      "productCode": "P005",
+      "type": "OUT",
+      "delta": -2,
+      "memo": "정상 일일 출고 (D-25)",
+      "user": "staff",
+      "at": "2026-02-05T03:54:06.441Z"
+    },
+    {
+      "id": "H_P005_OUT_1772423646443_vqeq3mno",
+      "productCode": "P005",
+      "type": "OUT",
+      "delta": -2,
+      "memo": "정상 일일 출고 (D-26)",
+      "user": "staff",
+      "at": "2026-02-04T03:54:06.441Z"
+    },
+    {
+      "id": "H_P005_OUT_1772423646443_e5gzw83c",
+      "productCode": "P005",
+      "type": "OUT",
+      "delta": -2,
+      "memo": "정상 일일 출고 (D-27)",
+      "user": "staff",
+      "at": "2026-02-03T03:54:06.441Z"
+    },
+    {
+      "id": "H_P005_OUT_1772423646443_20fre5l0",
+      "productCode": "P005",
+      "type": "OUT",
+      "delta": -2,
+      "memo": "정상 일일 출고 (D-28)",
+      "user": "staff",
+      "at": "2026-02-02T03:54:06.441Z"
+    },
+    {
+      "id": "H_P005_OUT_1772423646443_mpkhf815",
+      "productCode": "P005",
+      "type": "OUT",
+      "delta": -2,
+      "memo": "정상 일일 출고 (D-29)",
+      "user": "staff",
+      "at": "2026-02-01T03:54:06.441Z"
+    },
+    {
+      "id": "H_P005_OUT_1772423646443_urfdulso",
+      "productCode": "P005",
+      "type": "OUT",
+      "delta": -2,
+      "memo": "정상 일일 출고 (D-30)",
+      "user": "staff",
+      "at": "2026-01-31T03:54:06.441Z"
+    },
+    {
+      "id": "H_P001_IN_1772423646443_11pptq2i",
+      "productCode": "P001",
+      "type": "IN",
+      "delta": 10,
+      "memo": "정기 입고 (단가 1,200,000원)",
+      "user": "admin",
+      "at": "2026-01-26T03:54:06.441Z",
+      "unitCost": 1200000
+    },
+    {
+      "id": "H_P001_IN_1772423646443_15aj4igc",
+      "productCode": "P001",
+      "type": "IN",
+      "delta": 10,
+      "memo": "정기 입고 (단가 1,200,000원)",
+      "user": "admin",
+      "at": "2026-01-21T03:54:06.441Z",
+      "unitCost": 1200000
+    },
+    {
+      "id": "H_P001_IN_1772423646443_exh9btbg",
+      "productCode": "P001",
+      "type": "IN",
+      "delta": 10,
+      "memo": "정기 입고 (단가 1,200,000원)",
+      "user": "admin",
+      "at": "2026-01-16T03:54:06.441Z",
+      "unitCost": 1200000
+    },
+    {
+      "id": "H_P001_IN_1772423646443_vtxyraw4",
+      "productCode": "P001",
+      "type": "IN",
+      "delta": 10,
+      "memo": "정기 입고 (단가 1,200,000원)",
+      "user": "admin",
+      "at": "2026-01-11T03:54:06.441Z",
+      "unitCost": 1200000
+    },
+    {
+      "id": "H_P001_IN_1772423646443_slko7kns",
+      "productCode": "P001",
+      "type": "IN",
+      "delta": 10,
+      "memo": "정기 입고 (단가 1,200,000원)",
+      "user": "admin",
+      "at": "2026-01-06T03:54:06.441Z",
+      "unitCost": 1200000
+    },
+    {
+      "id": "H_P001_IN_1772423646443_xk8ta55q",
+      "productCode": "P001",
+      "type": "IN",
+      "delta": 10,
+      "memo": "정기 입고 (단가 1,200,000원)",
+      "user": "admin",
+      "at": "2026-01-01T03:54:06.441Z",
+      "unitCost": 1200000
     }
   ],
   "approvals": [
