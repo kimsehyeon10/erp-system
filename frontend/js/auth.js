@@ -4,6 +4,8 @@ import { loadDashboard } from "./dashboard.js";
 import { loadProductsPage } from "./products.js";
 import { loadInventoryPage } from "./inventory.js";
 import { loadHistoryPage } from "./history.js";
+import { initHyundai } from "./hyundai.js";
+import { initCost } from "./cost.js";
 
 function setUserUI() {
   const userStr = localStorage.getItem("authUser");
@@ -53,6 +55,12 @@ function initMenu() {
           // fallback: dynamic import
           import("./production.js").then(m => m.loadProductionPage());
         }
+      } else if (page === "hyundai") {
+        setActivePage("hyundai");
+        initHyundai();
+      } else if (page === "cost") {
+        setActivePage("cost");
+        initCost();
       }
     });
   });

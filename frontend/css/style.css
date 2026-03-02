@@ -1835,3 +1835,66 @@ table tbody tr:hover {
 #ledgerDetailModal .modal-content {
   max-width: 600px;
 }
+
+/* ══════════════════════════════════════════════════
+   현대 재고 / 원가 계산 공통 스타일
+   ══════════════════════════════════════════════════ */
+
+/* 상태 배지 */
+.status-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.status-badge.status-ok {
+  background: #D1FAE5;
+  color: #059669;
+}
+.status-badge.status-warning {
+  background: #FEF3C7;
+  color: #D97706;
+}
+.status-badge.status-danger {
+  background: #FEE2E2;
+  color: #DC2626;
+}
+
+/* 인라인 소형 버튼 */
+.btn-sm {
+  display: inline-block;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 4px;
+  background: #f8fafc;
+  color: var(--text-primary, #1e293b);
+  cursor: pointer;
+  margin: 2px;
+  transition: background 0.15s;
+}
+.btn-sm:hover {
+  background: var(--primary-light, #eef2ff);
+  border-color: var(--primary-color, #4f46e5);
+  color: var(--primary-color, #4f46e5);
+}
+
+/* 위험 소형 버튼 */
+.btn-danger-sm {
+  display: inline-block;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid #fca5a5;
+  border-radius: 4px;
+  background: #fff1f2;
+  color: #dc2626;
+  cursor: pointer;
+  margin: 2px;
+  transition: background 0.15s;
+}
+.btn-danger-sm:hover {
+  background: #fee2e2;
+}

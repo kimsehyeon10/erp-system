@@ -13,6 +13,8 @@ const ledgerRoutes     = require("./routes/ledger");
 const productionRoutes = require("./routes/production");
 const aiRiskRoutes     = require("./routes/ai.risk");
 const aiRoutes         = require("./routes/ai");       // ✅ 재고 리스크 예측 v2
+const costRoutes       = require("./routes/cost");     // ✅ 원가 계산
+const hyundaiRoutes    = require("./routes/hyundai");  // ✅ 현대 스톡 자재
 
 // ✅ 서버 시작 시 DB 스키마 자동 마이그레이션
 try {
@@ -119,7 +121,9 @@ app.use("/approvals", approvalRoutes);
 app.use("/ledger", ledgerRoutes);
 app.use("/production", productionRoutes);
 app.use("/ai", aiRiskRoutes);
-app.use("/api/ai", aiRoutes);    // ✅ 재고 리스크 예측 v2 (5가지 기능 + JSON fallback)
+app.use("/api/ai", aiRoutes);         // ✅ 재고 리스크 예측 v2 (5가지 기능 + JSON fallback)
+app.use("/cost", costRoutes);         // ✅ 원가 계산 API
+app.use("/hyundai/products", hyundaiRoutes); // ✅ 현대 스톡 자재 API
 
 app.use((req, res) => {
   res.status(404).json({ ok: false, message: "Not Found" });
@@ -149,8 +153,10 @@ server.listen(PORT, HOST, () => {
   console.log(`   HTTP  : http://localhost:${PORT}`);
   console.log(`   Network: http://[Your-IP]:${PORT}`);
   console.log(`   Socket: ws://localhost:${PORT}`);
-  console.log(`   Features: Real-time, Approvals, AI`);
-  console.log(`   AI API : http://localhost:${PORT}/api/ai/health`);;
+  console.log(`   Features: Real-time, Approvals, AI, Cost, Hyundai`);
+  console.log(`   AI API  : http://localhost:${PORT}/api/ai/health`);
+  console.log(`   Cost API: http://localhost:${PORT}/cost/calculate`);
+  console.log(`   Hyundai : http://localhost:${PORT}/hyundai/products`);
   console.log(`=======================================\n`);
 });
 

@@ -57,6 +57,8 @@
           <li class="menu-item" data-page="history">재고 이력</li>
           <li class="menu-item" data-page="barcode">바코드</li>
           <li class="menu-item" data-page="production">생산관리</li>
+          <li class="menu-item" data-page="hyundai" style="border-top:1px solid rgba(255,255,255,0.15);margin-top:6px;padding-top:6px;">🏭 현대 재고</li>
+          <li class="menu-item" data-page="cost">💰 원가 계산</li>
         </ul>
       </nav>
 
@@ -313,6 +315,194 @@
               팁: 바코드 스캐너는 키보드 입력처럼 동작합니다. Enter로 조회됩니다.
             </p>
           </div>
+        </div>
+      </section>
+
+      <!-- ══════════════════════════════════════ -->
+      <!-- 현대 재고 페이지                        -->
+      <!-- ══════════════════════════════════════ -->
+      <section id="hyundaiPage" class="page">
+        <div class="page-header">
+          <h1>🏭 현대 재고</h1>
+          <p>현대 스톡 자재를 일반 재고와 완전 분리하여 관리합니다 (합산 없음)</p>
+        </div>
+
+        <div class="table-container">
+          <div class="table-header">
+            <div class="table-header-left">
+              <input id="hyundaiSearch" class="search-box" type="text"
+                placeholder="코드/자재명/위치 검색..." />
+              <button class="btn-add" id="hyundaiSearchBtn">검색</button>
+            </div>
+            <div class="table-header-left">
+              <button class="btn-add" id="openAddHyundaiBtn">+ 자재 추가</button>
+            </div>
+          </div>
+
+          <div class="hint small" style="margin:8px 12px;padding:8px;background:#fef3c7;border-left:4px solid #f59e0b;border-radius:4px;">
+            ⚠️ <strong>현대 자재</strong>는 일반 재고에 포함되지 않습니다.
+            분실 시 <strong>패널티 단가(기본 3배)</strong>가 적용됩니다.
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>코드</th>
+                <th>자재명</th>
+                <th>카테고리</th>
+                <th>단위</th>
+                <th>현재 재고</th>
+                <th>매입 단가</th>
+                <th>패널티 단가</th>
+                <th>상태</th>
+                <th>관리</th>
+              </tr>
+            </thead>
+            <tbody id="hyundaiTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ══════════════════════════════════════ -->
+      <!-- 원가 계산 페이지                        -->
+      <!-- ══════════════════════════════════════ -->
+      <section id="costPage" class="page">
+        <div class="page-header">
+          <h1>💰 원가 계산</h1>
+          <p>자재 매입 단가 + 부가 비용 + 마진율로 판매가를 자동 계산합니다</p>
+        </div>
+
+        <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start;">
+
+          <!-- 입력 패널 -->
+          <div class="table-container" style="flex:1;min-width:340px;">
+            <h3 style="margin:0 0 16px;font-size:15px;font-weight:700;color:var(--text-primary);">원가 계산 입력</h3>
+
+            <div class="input-group">
+              <label>상품 선택 (선택사항)</label>
+              <select id="costProductSelect" style="width:100%;"></select>
+              <div class="hint small">선택하면 단가가 자동 입력됩니다. 저장하려면 반드시 선택하세요.</div>
+            </div>
+
+            <div style="display:flex;gap:12px;flex-wrap:wrap;">
+              <div class="input-group" style="flex:1;min-width:140px;">
+                <label>자재 매입 단가 (원)</label>
+                <input id="costUnitPrice" type="number" min="0" value="0"
+                  style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:4px;" />
+              </div>
+              <div class="input-group" style="flex:1;min-width:100px;">
+                <label>수량</label>
+                <input id="costQty" type="number" min="1" value="1"
+                  style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:4px;" />
+              </div>
+            </div>
+
+            <!-- 부가 비용 테이블 -->
+            <div class="input-group">
+              <label>부가 비용 (선택 입력)</label>
+              <table style="width:100%;border-collapse:collapse;margin-top:4px;">
+                <thead>
+                  <tr style="background:#f3f4f6;font-size:12px;">
+                    <th style="padding:6px;text-align:left;border:1px solid #e5e7eb;">항목명</th>
+                    <th style="padding:6px;text-align:left;border:1px solid #e5e7eb;">금액 (원)</th>
+                    <th style="padding:6px;border:1px solid #e5e7eb;"></th>
+                  </tr>
+                </thead>
+                <tbody id="costAdditionalBody"></tbody>
+              </table>
+              <button type="button" id="costAddRowBtn" class="btn-add" style="margin-top:8px;font-size:12px;">
+                + 비용 항목 추가
+              </button>
+            </div>
+
+            <div class="input-group">
+              <label>마진율 (%)</label>
+              <input id="costMarginRate" type="number" min="0" max="500" step="0.1" value="0"
+                placeholder="예: 30 = 30% 마진"
+                style="width:120px;padding:6px 8px;border:1px solid #ddd;border-radius:4px;" />
+              <div class="hint small">0 입력 시 마진 없음. 입력하면 판매가 자동 계산.</div>
+            </div>
+
+            <div class="input-group">
+              <label>메모 (저장 시 사용)</label>
+              <input id="costMemo" type="text" placeholder="예: 2026년 3월 매입가 기준"
+                style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:4px;" />
+            </div>
+
+            <div style="display:flex;gap:8px;margin-top:12px;">
+              <button id="costCalcBtn" class="btn-submit">🧮 계산하기</button>
+              <button id="costSaveBtn" class="btn-add">💾 저장</button>
+            </div>
+          </div>
+
+          <!-- 결과 패널 -->
+          <div class="table-container" style="flex:1;min-width:300px;">
+            <h3 style="margin:0 0 16px;font-size:15px;font-weight:700;color:var(--text-primary);">계산 결과</h3>
+
+            <div id="costResultBox" style="display:none;">
+              <table style="width:100%;border-collapse:collapse;">
+                <tbody>
+                  <tr style="background:#f9fafb;">
+                    <td style="padding:8px 12px;border:1px solid #e5e7eb;font-size:13px;color:#6b7280;width:45%;">매입 단가</td>
+                    <td id="costResUnitPrice" style="padding:8px 12px;border:1px solid #e5e7eb;font-size:13px;font-weight:600;">-</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:8px 12px;border:1px solid #e5e7eb;font-size:13px;color:#6b7280;">수량</td>
+                    <td id="costResQty" style="padding:8px 12px;border:1px solid #e5e7eb;font-size:13px;font-weight:600;">-</td>
+                  </tr>
+                  <tr style="background:#f9fafb;">
+                    <td style="padding:8px 12px;border:1px solid #e5e7eb;font-size:13px;color:#6b7280;">자재비 (단가×수량)</td>
+                    <td id="costResMaterialCost" style="padding:8px 12px;border:1px solid #e5e7eb;font-size:13px;font-weight:600;">-</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:8px 12px;border:1px solid #e5e7eb;font-size:13px;color:#6b7280;">부가 비용 합계</td>
+                    <td style="padding:8px 12px;border:1px solid #e5e7eb;font-size:13px;">
+                      <span id="costResTotalAdditional" style="font-weight:600;">-</span>
+                      <div id="costResAdditionalDetail" style="font-size:11px;color:#9ca3af;margin-top:3px;"></div>
+                    </td>
+                  </tr>
+                  <tr style="background:#eff6ff;">
+                    <td style="padding:10px 12px;border:1px solid #bfdbfe;font-size:13px;font-weight:700;color:#1d4ed8;">총 원가</td>
+                    <td id="costResTotalCost" style="padding:10px 12px;border:1px solid #bfdbfe;font-size:14px;font-weight:700;color:#1d4ed8;">-</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:8px 12px;border:1px solid #e5e7eb;font-size:13px;color:#6b7280;">단위 원가</td>
+                    <td id="costResUnitCost" style="padding:8px 12px;border:1px solid #e5e7eb;font-size:13px;font-weight:600;">-</td>
+                  </tr>
+                  <tr style="background:#f0fdf4;">
+                    <td style="padding:10px 12px;border:1px solid #bbf7d0;font-size:13px;font-weight:700;color:#16a34a;">판매가 (마진 포함)</td>
+                    <td id="costResSellingPrice" style="padding:10px 12px;border:1px solid #bbf7d0;font-size:15px;font-weight:700;color:#16a34a;">-</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div id="costResultEmpty" style="padding:24px;text-align:center;color:#9ca3af;">
+              왼쪽에서 입력 후 "계산하기"를 누르세요.
+            </div>
+          </div>
+        </div>
+
+        <!-- 저장된 원가 기록 -->
+        <div class="table-container" style="margin-top:20px;">
+          <h3 style="margin:0 0 12px;font-size:15px;font-weight:700;">저장된 원가 기록</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>저장일시</th>
+                <th>상품명</th>
+                <th>매입단가</th>
+                <th>수량</th>
+                <th>부가비용</th>
+                <th>총원가</th>
+                <th>판매가</th>
+                <th>메모</th>
+              </tr>
+            </thead>
+            <tbody id="costHistoryBody">
+              <tr><td colspan="8" style="text-align:center;padding:12px;color:#888;">상품을 선택하면 기록이 표시됩니다.</td></tr>
+            </tbody>
+          </table>
         </div>
       </section>
 
@@ -978,6 +1168,137 @@
 
 
 
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- 현대 자재 등록/수정 모달                         -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div id="hyundaiModal" class="modal" style="display:none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="hyundaiModalTitle">현대 자재 등록</h2>
+        <span class="close-btn" id="closeHyundaiModal">&times;</span>
+      </div>
+      <form id="hyundaiForm">
+        <div class="hint small" style="margin-bottom:12px;padding:8px;background:#fef3c7;border-left:4px solid #f59e0b;border-radius:4px;">
+          ⚠️ 현대 자재 코드는 일반 상품 코드와 중복될 수 없습니다.
+        </div>
+
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <div class="input-group" style="flex:1;min-width:130px;">
+            <label>자재 코드 *</label>
+            <input id="hyundaiCode" type="text" required placeholder="예: HY001" />
+          </div>
+          <div class="input-group" style="flex:2;min-width:200px;">
+            <label>자재명 *</label>
+            <input id="hyundaiName" type="text" required placeholder="예: 현대 강판 2mm" />
+          </div>
+        </div>
+
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <div class="input-group" style="flex:1;min-width:130px;">
+            <label>카테고리</label>
+            <input id="hyundaiCategory" type="text" value="원자재" placeholder="원자재" />
+          </div>
+          <div class="input-group" style="flex:1;min-width:80px;">
+            <label>단위</label>
+            <select id="hyundaiUnit">
+              <option value="ea">ea</option>
+              <option value="m">m</option>
+              <option value="kg">kg</option>
+              <option value="개">개</option>
+              <option value="box">box</option>
+            </select>
+          </div>
+          <div class="input-group" style="flex:1;min-width:100px;">
+            <label>초기 재고</label>
+            <input id="hyundaiQty" type="number" min="0" value="0" />
+          </div>
+        </div>
+
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <div class="input-group" style="flex:1;min-width:140px;">
+            <label>매입 단가 (원)</label>
+            <input id="hyundaiUnitPrice" type="number" min="0" value="0" />
+          </div>
+          <div class="input-group" style="flex:1;min-width:130px;">
+            <label>패널티 배율 (기본 3배)</label>
+            <input id="hyundaiPenaltyRate" type="number" min="1" step="0.5" value="3" />
+            <div class="hint small">분실 시 단가 × 배율 = 패널티 금액</div>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label>보관 위치</label>
+          <input id="hyundaiLocation" type="text" placeholder="예: 현대창고 A구역" />
+        </div>
+        <div class="input-group">
+          <label>규격</label>
+          <input id="hyundaiSpec" type="text" placeholder="예: 두께 2mm, 폭 1000mm" />
+        </div>
+        <div class="input-group">
+          <label>비고</label>
+          <input id="hyundaiNote" type="text" placeholder="선택사항" />
+        </div>
+
+        <div class="form-actions">
+          <button class="btn-submit" type="submit">저장</button>
+          <button class="btn-cancel" type="button" id="cancelHyundaiModal">취소</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- 현대 자재 재고 조정 모달                         -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div id="hyundaiAdjustModal" class="modal" style="display:none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>현대 자재 재고 조정</h2>
+        <span class="close-btn" id="closeHyundaiAdjustModal">&times;</span>
+      </div>
+      <form id="hyundaiAdjustForm">
+        <div style="padding:10px;background:#f3f4f6;border-radius:6px;margin-bottom:14px;">
+          <div id="hyundaiAdjustProductName" style="font-weight:700;font-size:14px;"></div>
+          <div id="hyundaiAdjustCurrentQty" style="color:#6b7280;font-size:13px;margin-top:4px;"></div>
+          <div id="hyundaiAdjustPenaltyInfo" style="color:#dc2626;font-size:12px;margin-top:4px;"></div>
+        </div>
+
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <div class="input-group" style="flex:1;min-width:120px;">
+            <label>유형</label>
+            <select id="hyundaiAdjustType" required>
+              <option value="IN">입고(IN)</option>
+              <option value="OUT">출고(OUT)</option>
+              <option value="ADJUST">조정(ADJUST)</option>
+            </select>
+          </div>
+          <div class="input-group" style="flex:1;min-width:100px;">
+            <label>수량</label>
+            <input id="hyundaiAdjustDelta" type="number" min="1" required />
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label>메모</label>
+          <input id="hyundaiAdjustMemo" type="text" placeholder="선택사항" />
+        </div>
+
+        <div class="input-group">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+            <input id="hyundaiAdjustIsLost" type="checkbox" style="width:16px;height:16px;" />
+            <span style="color:#dc2626;font-weight:600;">분실 처리 (패널티 단가 적용)</span>
+          </label>
+          <div id="hyundaiAdjustPenaltyAmt" style="margin-top:6px;font-weight:600;"></div>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn-submit" type="submit">적용</button>
+          <button class="btn-cancel" type="button" id="cancelHyundaiAdjustModal">취소</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script type="module" src="./js/utils.js"></script>
   <script type="module" src="./js/api.js"></script>
   <script type="module" src="./js/auth.js"></script>
@@ -988,6 +1309,8 @@
   <script type="module" src="./js/barcode.js"></script>
   <script type="module" src="./js/production.js"></script>
   <script type="module" src="./js/socket.js"></script>
+  <script type="module" src="./js/hyundai.js"></script>
+  <script type="module" src="./js/cost.js"></script>
 
   <script type="module">
     // 모달 초기화

@@ -44,7 +44,8 @@
           "componentCode": "P003",
           "qtyPerUnit": 3
         }
-      ]
+      ],
+      "stock_type": "normal"
     },
     {
       "id": "P002",
@@ -64,7 +65,8 @@
       "condition": "used",
       "productType": "finished",
       "unitCost": 35000,
-      "bomItems": []
+      "bomItems": [],
+      "stock_type": "normal"
     },
     {
       "id": "P003",
@@ -84,7 +86,8 @@
       "condition": "new",
       "productType": "bom",
       "unitCost": 89000,
-      "bomItems": []
+      "bomItems": [],
+      "stock_type": "normal"
     },
     {
       "id": "P004",
@@ -103,7 +106,8 @@
       "condition": "new",
       "productType": "finished",
       "bomItems": [],
-      "updatedAt": "2026-03-02T03:54:06.441Z"
+      "updatedAt": "2026-03-02T03:54:06.441Z",
+      "stock_type": "normal"
     },
     {
       "id": "P005",
@@ -122,7 +126,8 @@
       "condition": "new",
       "productType": "finished",
       "bomItems": [],
-      "updatedAt": "2026-03-02T03:54:06.441Z"
+      "updatedAt": "2026-03-02T03:54:06.441Z",
+      "stock_type": "normal"
     }
   ],
   "history": [
@@ -1570,5 +1575,7 @@
       "userId": "test-admin"
     }
   ],
-  "sales": []
+  "sales": [],
+  "hyundaiProducts": [],
+  "costRecords": []
 }
