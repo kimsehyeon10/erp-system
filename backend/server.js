@@ -11,6 +11,7 @@ const historyRoutes    = require("./routes/history");
 const approvalRoutes   = require("./routes/approvals");
 const ledgerRoutes     = require("./routes/ledger");
 const productionRoutes = require("./routes/production");
+const aiRiskRoutes     = require("./routes/ai.risk");
 
 // ✅ 서버 시작 시 DB 스키마 자동 마이그레이션
 try {
@@ -116,6 +117,7 @@ app.use("/history", historyRoutes);
 app.use("/approvals", approvalRoutes);
 app.use("/ledger", ledgerRoutes);
 app.use("/production", productionRoutes);
+app.use("/ai", aiRiskRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ ok: false, message: "Not Found" });
