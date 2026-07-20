@@ -1,0 +1,58 @@
+name: ERP 재고관리 주간보고 초안
+
+on:
+  workflow_dispatch:
+    inputs:
+      report_days:
+        description: "수집 기간(일)"
+        required: true
+        default: "7"
+        type: choice
+        options:
+          - "7"
+          - "14"
+          - "30"
+      approval:
+        description: "초안 생성을 승인하려면 APPROVE를 선택하세요."
+        required: true
+        default: "HOLD"
+        type: choice
+        options:
+          - "HOLD"
+          - "APPROVE"
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  generate:
+    if: ${{ inputs.approval == 'APPROVE' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: 저장소 체크아웃
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Node.js 설정
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: 주간보고 초안 생성
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          REPORT_DAYS: ${{ inputs.report_days }}
+          REPORT_OUTPUT_DIR: weekly-report-output
+        run: node .github/scripts/generate-weekly-report.js
+
+      - name: 보고서 파일 업로드
+        uses: actions/upload-artifact@v4
+        with:
+          name: erp-inventory-weekly-report-${{ github.run_number }}
+          path: weekly-report-output/
+          retention-days: 30
+          if-no-files-found: error
